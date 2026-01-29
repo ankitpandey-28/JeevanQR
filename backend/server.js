@@ -7,6 +7,7 @@ const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const QRCode = require('qrcode');
 
 // Import database module
@@ -22,6 +23,11 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Enable CORS so frontend hosted on a different origin can call APIs.
+// If you want to restrict to a specific origin, set ALLOWED_ORIGIN env var.
+const corsOptions = process.env.ALLOWED_ORIGIN ? { origin: process.env.ALLOWED_ORIGIN } : {};
+app.use(cors(corsOptions));
 
 // ============================================
 // STATIC FILE SERVING (Frontend)
@@ -254,13 +260,16 @@ app.use((err, req, res, next) => {
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
-  console.log('=========================================');
-  console.log('  QR Emergency Alert System');
-  console.log('=========================================');
-  console.log(`  Server running on: http://localhost:${PORT}`);
-  console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log('=========================================');
-});
+// Start server only when running directly (not when required by serverless platforms)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('=========================================');
+    console.log('  QR Emergency Alert System');
+    console.log('=========================================');
+    console.log(`  Server running on: http://localhost:${PORT}`);
+    console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log('=========================================');
+  });
+}
 
 module.exports = app;
