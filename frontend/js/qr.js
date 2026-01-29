@@ -23,12 +23,15 @@
   // Get token from URL
   const token = getQueryParam('token');
 
+  // API base (can be set by /js/config.js). Leave empty to use relative paths.
+  const API_BASE = window.API_BASE || '';
+
   if (!token) {
     qrInfo.innerHTML =
       '<span class="error">Missing token. कृपया रजिस्ट्रेशन पेज से दोबारा आएं।</span>';
     qrImage.style.display = 'none';
   } else {
-    const qrSrc = '/api/qr/' + encodeURIComponent(token);
+    const qrSrc = API_BASE + '/api/qr/' + encodeURIComponent(token);
     qrImage.src = qrSrc;
   }
 })();

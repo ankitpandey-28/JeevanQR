@@ -13,6 +13,7 @@ const path = require('path');
 const DATABASE_DIR = path.join(__dirname, '..', 'database');
 const USERS_FILE = path.join(DATABASE_DIR, 'users.json');
 const LOGS_FILE = path.join(DATABASE_DIR, 'accident_logs.json');
+const PHOTOS_FILE = path.join(DATABASE_DIR, 'photos.json');
 
 // ============================================
 // IN-MEMORY STORAGE
@@ -20,6 +21,7 @@ const LOGS_FILE = path.join(DATABASE_DIR, 'accident_logs.json');
 
 let users = {};          // token -> user object
 let accidentLogs = [];   // Array of accident location logs
+let photos = {};         // viewToken -> photo info
 
 // ============================================
 // INITIALIZATION
@@ -74,6 +76,25 @@ function loadAccidentLogs() {
 }
 
 /**
+ * Load photos from JSON file
+ */
+function loadPhotos() {
+  try {
+    if (fs.existsSync(PHOTOS_FILE)) {
+      const raw = fs.readFileSync(PHOTOS_FILE, 'utf8');
+      const parsed = JSON.parse(raw || '{}');
+      if (parsed && typeof parsed === 'object') {
+        photos = parsed;
+        console.log('[DB] Loaded', Object.keys(photos).length, 'photos from database');
+      }
+    }
+  } catch (err) {
+    console.error('[DB] Failed to load photos.json:', err.message);
+    photos = {};
+  }
+}
+
+/**
  * Save users to JSON file
  */
 function saveUsers() {
@@ -92,6 +113,17 @@ function saveAccidentLogs() {
     fs.writeFileSync(LOGS_FILE, JSON.stringify(accidentLogs, null, 2), 'utf8');
   } catch (err) {
     console.error('[DB] Failed to save accident_logs.json:', err.message);
+  }
+}
+
+/**
+ * Save photos to JSON file
+ */
+function savePhotos() {
+  try {
+    fs.writeFileSync(PHOTOS_FILE, JSON.stringify(photos, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[DB] Failed to save photos.json:', err.message);
   }
 }
 
@@ -185,8 +217,52 @@ function getStats() {
   return {
     totalUsers: Object.keys(users).length,
     totalAccidentLogs: accidentLogs.length,
+    totalPhotos: Object.keys(photos).length,
     lastUpdated: new Date().toISOString()
   };
+}
+
+// ============================================
+// PHOTO OPERATIONS
+// ============================================
+
+/**
+ * Log photo upload
+ * @param {string} token - User token
+ * @param {object} photoInfo - Photo information
+ */
+function logPhotoUpload(token, photoInfo) {
+  photos[photoInfo.viewToken] = {
+    ...photoInfo,
+    token: token,
+    viewed: false,
+    createdAt: new Date().toISOString()
+  };
+  savePhotos();
+  
+  console.log('[DB] Photo uploaded:', photoInfo.filename, '(ViewToken:', photoInfo.viewToken.substring(0, 8) + '...)');
+}
+
+/**
+ * Get photo by view token
+ * @param {string} viewToken - Photo view token
+ * @returns {object|null}
+ */
+function getPhotoByViewToken(viewToken) {
+  return photos[viewToken] || null;
+}
+
+/**
+ * Mark photo as viewed (one-time access)
+ * @param {string} viewToken - Photo view token
+ */
+function markPhotoAsViewed(viewToken) {
+  if (photos[viewToken]) {
+    photos[viewToken].viewed = true;
+    photos[viewToken].viewedAt = new Date().toISOString();
+    savePhotos();
+    console.log('[DB] Photo marked as viewed:', viewToken.substring(0, 8) + '...');
+  }
 }
 
 // ============================================
@@ -196,6 +272,7 @@ function getStats() {
 ensureDatabaseDir();
 loadUsers();
 loadAccidentLogs();
+loadPhotos();
 
 // ============================================
 // EXPORTS
@@ -211,6 +288,11 @@ module.exports = {
   // Accident log operations
   logAccidentLocation,
   getRecentAccidentLogs,
+  
+  // Photo operations
+  logPhotoUpload,
+  getPhotoByViewToken,
+  markPhotoAsViewed,
   
   // Statistics
   getStats

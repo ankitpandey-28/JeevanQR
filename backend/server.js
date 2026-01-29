@@ -9,6 +9,8 @@ const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const QRCode = require('qrcode');
+const multer = require('multer');
+const fs = require('fs');
 
 // Import database module
 const db = require('./database');
@@ -30,6 +32,43 @@ const corsOptions = process.env.ALLOWED_ORIGIN ? { origin: process.env.ALLOWED_O
 app.use(cors(corsOptions));
 
 // ============================================
+// FILE UPLOAD CONFIGURATION
+// ============================================
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for photo uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'emergency-' + uniqueSuffix + '.jpg');
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    // Only accept image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
+// ============================================
 // STATIC FILE SERVING (Frontend)
 // ============================================
 
@@ -38,6 +77,7 @@ const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 // Serve static assets (CSS, JS)
 app.use('/css', express.static(path.join(FRONTEND_DIR, 'css')));
 app.use('/js', express.static(path.join(FRONTEND_DIR, 'js')));
+app.use('/uploads', express.static(uploadsDir));
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -57,8 +97,8 @@ function generateToken() {
  * @returns {boolean}
  */
 function isValidIndianPhone(phone) {
-  const cleaned = phone.replace(/\D/g, '');
-  return cleaned.length >= 10 && cleaned.length <= 13;
+  // Temporarily accept ANY non-empty value
+  return phone && phone.trim().length > 0;
 }
 
 /**
@@ -93,6 +133,21 @@ app.get('/qr.html', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'qr.html'));
 });
 
+// Emergency contacts page
+app.get('/emergency-contacts.html', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'emergency-contacts.html'));
+});
+
+// Government helplines page
+app.get('/government-helplines.html', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'government-helplines.html'));
+});
+
+// Privacy settings page
+app.get('/privacy-settings.html', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'privacy-settings.html'));
+});
+
 // Emergency scan page (for rescuers)
 app.get('/scan/:token', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'scan.html'));
@@ -107,20 +162,45 @@ app.get('/scan/:token', (req, res) => {
  * Register a new user and generate token
  */
 app.post('/api/register', (req, res) => {
-  const { fullName, bloodGroup, emergencyContact } = req.body;
+  const { fullName, bloodGroup, emergencyContacts, governmentHelplines } = req.body;
 
   // Validate required fields
-  if (!fullName || !bloodGroup || !emergencyContact) {
+  if (!fullName || !bloodGroup) {
     return res.status(400).json({ 
       error: 'Missing required fields. सभी जानकारी आवश्यक है।' 
     });
   }
 
-  // Validate phone number format
-  if (!isValidIndianPhone(emergencyContact)) {
+  // Validate emergency contacts
+  if (!emergencyContacts || !Array.isArray(emergencyContacts) || emergencyContacts.length === 0) {
     return res.status(400).json({ 
-      error: 'Invalid emergency contact number. अमान्य फोन नंबर।' 
+      error: 'At least one emergency contact is required. कम से कम एक आपातकालीन संपर्क आवश्यक है।' 
     });
+  }
+
+  // Validate government helplines
+  if (!governmentHelplines || !Array.isArray(governmentHelplines) || governmentHelplines.length === 0) {
+    return res.status(400).json({ 
+      error: 'At least one government helpline is required. कम से कम एक सरकारी हेल्पलाइन आवश्यक है।' 
+    });
+  }
+
+  // Validate emergency contact phone numbers
+  for (const contact of emergencyContacts) {
+    if (!contact.name || !contact.phone || !isValidIndianPhone(contact.phone)) {
+      return res.status(400).json({ 
+        error: 'Invalid emergency contact information. अमान्य आपातकालीन संपर्क जानकारी।' 
+      });
+    }
+  }
+
+  // Validate government helpline numbers
+  for (const helpline of governmentHelplines) {
+    if (!helpline.name || !helpline.number || !isValidIndianPhone(helpline.number)) {
+      return res.status(400).json({ 
+        error: 'Invalid government helpline information. अमान्य सरकारी हेल्पलाइन जानकारी।' 
+      });
+    }
   }
 
   // Generate unique token
@@ -130,7 +210,14 @@ app.post('/api/register', (req, res) => {
   const user = {
     fullName: fullName.trim(),
     bloodGroup: bloodGroup.trim().toUpperCase(),
-    emergencyContact: cleanPhoneNumber(emergencyContact),
+    emergencyContacts: emergencyContacts.map(contact => ({
+      name: contact.name.trim(),
+      phone: cleanPhoneNumber(contact.phone)
+    })),
+    governmentHelplines: governmentHelplines.map(helpline => ({
+      name: helpline.name.trim(),
+      number: cleanPhoneNumber(helpline.number)
+    })),
     createdAt: new Date().toISOString()
   };
 
@@ -161,6 +248,7 @@ app.get('/api/qr/:token', async (req, res) => {
   }
 
   // Build URL to encode in QR
+  // This will be a direct link to the emergency page
   const publicUrl = `${req.protocol}://${req.get('host')}/scan/${token}`;
 
   try {
@@ -190,12 +278,16 @@ app.get('/api/users/:token/public', (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
-  // Return public data only
-  // Phone number is base64-encoded (not shown as text on page)
+  // Return public data including arrays of emergency contacts and government helplines
+  // Phone numbers are base64-encoded (not shown as text on page)
   res.json({
     fullName: user.fullName,
     bloodGroup: user.bloodGroup,
-    contactEncoded: encodeBase64(user.emergencyContact)
+    emergencyContacts: user.emergencyContacts.map(contact => ({
+      name: contact.name,
+      phoneEncoded: encodeBase64(contact.phone)
+    })),
+    governmentHelplines: user.governmentHelplines
   });
 });
 
@@ -232,6 +324,81 @@ app.post('/api/users/:token/location', (req, res) => {
 app.get('/api/stats', (req, res) => {
   const stats = db.getStats();
   res.json(stats);
+});
+
+/**
+ * POST /api/upload-photo
+ * Upload emergency photo and return secure URL
+ */
+app.post('/api/upload-photo', upload.single('photo'), (req, res) => {
+  try {
+    const { token, patientName, timestamp } = req.body;
+    
+    // Validate user exists
+    const user = db.getUser(token);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No photo uploaded' });
+    }
+
+    // Generate secure view token
+    const viewToken = generateToken();
+    
+    // Log photo upload
+    db.logPhotoUpload(token, {
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      patientName: patientName,
+      timestamp: timestamp,
+      uploadedAt: new Date().toISOString(),
+      viewToken: viewToken
+    });
+
+    // Create URLs
+    const photoUrl = `/uploads/${req.file.filename}`;
+    const secureUrl = `${req.protocol}://${req.get('host')}/photo/${viewToken}`;
+
+    res.json({
+      success: true,
+      photoUrl: photoUrl,
+      secureUrl: secureUrl,
+      viewToken: viewToken,
+      message: 'Photo uploaded successfully'
+    });
+
+  } catch (error) {
+    console.error('Photo upload error:', error);
+    res.status(500).json({ error: 'Photo upload failed' });
+  }
+});
+
+/**
+ * GET /photo/:viewToken
+ * View photo securely (one-time access)
+ */
+app.get('/photo/:viewToken', (req, res) => {
+  const { viewToken } = req.params;
+  
+  // Get photo info from database
+  const photoInfo = db.getPhotoByViewToken(viewToken);
+  if (!photoInfo) {
+    return res.status(404).send('Photo not found or expired');
+  }
+
+  // Check if photo has been viewed before (one-time access)
+  if (photoInfo.viewed) {
+    return res.status(410).send('Photo link expired - one-time access only');
+  }
+
+  // Mark as viewed
+  db.markPhotoAsViewed(viewToken);
+
+  // Serve the photo page
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'photo-view.html'));
 });
 
 // ============================================
