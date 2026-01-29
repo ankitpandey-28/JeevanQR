@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <title>JeevanQR</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>🧾 Your Emergency QR</h1>
+      <p>Save and print this code</p>
+      <p>इसे सेव और प्रिंट करें</p>
+    </header>
+
+    <main class="page">
+      <section class="card center">
+        <div id="qrInfo">
+          <p class="info-text">
+            Long press on the QR image to download / save to your phone
+            gallery.<br />
+            QR इमेज को लंबा दबाकर अपने फोन में सेव करें।
+          </p>
+        </div>
+        <img
+          id="qrImage"
+          class="qr-image"
+          src=""
+          alt="Emergency QR code"
+        />
+        <button
+          type="button"
+          class="btn-secondary btn-large"
+          onclick="window.location.href='/'"
+        >
+          ← Back to Home / वापस जाएं
+        </button>
+      </section>
+    </main>
+
+    <script src="/js/qr.js"></script>
+  </body>
+</html>

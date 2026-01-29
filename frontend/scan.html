@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <title>Emergency Details</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>🚨 Road Accident Emergency</h1>
+      <p>Stay calm. You are helping.</p>
+      <p>शांत रहें। आप मदद कर रहे हैं।</p>
+    </header>
+
+    <main class="page">
+      <section class="card">
+        <div id="personInfo" class="center">
+          <div class="name-display" id="personName">Loading...</div>
+          <div class="blood-display" id="personBlood"></div>
+          <div class="pill">Please inform ambulance / कृपया एम्बुलेंस बुलाएं</div>
+        </div>
+        <div id="loadError" class="error hidden"></div>
+      </section>
+
+      <section class="card">
+        <h2 style="margin-top: 0; font-size: 1rem">
+          Call Emergency Contact<br />
+          आपातकालीन संपर्क को कॉल करें
+        </h2>
+        <button id="callPersonalBtn" class="btn-large btn-call">
+          📞 Call Emergency Contact<br />
+          📞 आपातकालीन संपर्क को कॉल करें
+        </button>
+        <p class="info-text">
+          Number is kept private on this page. Only the family member will see
+          your phone number.
+          <br />
+          नंबर इस पेज पर नहीं दिखाया जाता है। केवल परिवार का सदस्य आपका नंबर
+          देखेगा।
+        </p>
+      </section>
+
+      <section class="card">
+        <h2 style="margin-top: 0; font-size: 1rem">
+          Indian Emergency Helplines<br />
+          भारतीय आपातकालीन हेल्पलाइन
+        </h2>
+        <button
+          class="btn-large btn-helpline"
+          onclick="window.location.href='tel:112'"
+        >
+          🚨 Call 112 (All-in-one Emergency)<br />
+          🚨 112 पर कॉल करें (सभी आपातकाल)
+        </button>
+        <button
+          class="btn-large btn-helpline"
+          onclick="window.location.href='tel:108'"
+        >
+          🚑 Call 108 (Ambulance)<br />
+          🚑 108 पर कॉल करें (एम्बुलेंस)
+        </button>
+      </section>
+
+      <section class="card">
+        <h2 style="margin-top: 0; font-size: 1rem">
+          Share Accident Location<br />
+          दुर्घटना स्थान साझा करें
+        </h2>
+        <button id="locationBtn" class="btn-large btn-location">
+          📍 Share Accident Location<br />
+          📍 दुर्घटना स्थान साझा करें
+        </button>
+        <div id="locationStatus" class="info-text"></div>
+        <div id="locationBox" class="location-box hidden"></div>
+        <button
+          id="shareLocationBtn"
+          class="btn-large btn-secondary hidden"
+          type="button"
+        >
+          🔁 Share via SMS / WhatsApp<br />
+          🔁 SMS / WhatsApp से शेयर करें
+        </button>
+      </section>
+
+      <section class="good-samaritan">
+        <strong>Good Samaritan Protection (India)</strong><br />
+        You are legally protected while helping.
+        <br />
+        <strong>आप मदद कर रहे हैं, कानून के अनुसार आप सुरक्षित हैं।</strong
+        ><br />
+        Police and hospitals cannot harass you for helping an accident victim in
+        good faith.
+        <br />
+        दुर्घटना पीड़ित की ईमानदारी से मदद करने पर पुलिस और अस्पताल आपको परेशान
+        नहीं कर सकते।
+      </section>
+    </main>
+
+    <script src="/js/scan.js"></script>
+  </body>
+</html>
