@@ -247,8 +247,8 @@ app.post('/api/register', (req, res) => {
   // Save to database
   db.saveUser(token, user);
 
-  // Build response URLs
-  const publicUrl = `${req.protocol}://${req.get('host')}/scan/${token}`;
+  // Build response URLs (use relative URLs for universal compatibility)
+  const publicUrl = `/scan/${token}`;
 
   res.json({
     token,
@@ -271,8 +271,8 @@ app.get('/api/qr/:token', async (req, res) => {
   }
 
   // Build URL to encode in QR
-  // This will be a direct link to the emergency page
-  const publicUrl = `${req.protocol}://${req.get('host')}/scan/${token}`;
+  // Use relative URL for universal compatibility across domains
+  const publicUrl = `/scan/${token}`;
 
   try {
     res.setHeader('Content-Type', 'image/png');
