@@ -39,11 +39,11 @@ app.use(cors(corsOptions));
 let uploadsDir;
 let upload;
 
-if (process.env.VERCEL) {
-  console.log('[SERVER] Running in Vercel - file uploads disabled');
-  uploadsDir = '/tmp'; // Use temp directory in Vercel
+if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+  console.log('[SERVER] Running in serverless environment - file uploads disabled');
+  uploadsDir = '/tmp'; // Use temp directory in serverless
   upload = multer({ 
-    storage: multer.memoryStorage(), // Use memory storage in Vercel
+    storage: multer.memoryStorage(), // Use memory storage in serverless
     limits: {
       fileSize: 5 * 1024 * 1024 // 5MB limit
     },

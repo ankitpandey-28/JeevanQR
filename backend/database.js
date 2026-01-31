@@ -32,9 +32,9 @@ let photos = {};         // viewToken -> photo info
  * Ensure database directory exists
  */
 function ensureDatabaseDir() {
-  // Skip directory creation in Vercel serverless
-  if (process.env.VERCEL) {
-    console.log('[DB] Running in Vercel - using in-memory storage');
+  // Skip directory creation in Vercel serverless or any serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+    console.log('[DB] Running in serverless environment - using in-memory storage');
     return;
   }
   
@@ -48,9 +48,9 @@ function ensureDatabaseDir() {
  * Load users from JSON file
  */
 function loadUsers() {
-  // Skip file loading in Vercel serverless
-  if (process.env.VERCEL) {
-    console.log('[DB] Running in Vercel - using in-memory users');
+  // Skip file loading in Vercel serverless or any serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+    console.log('[DB] Running in serverless environment - using in-memory users');
     return;
   }
   
@@ -73,9 +73,9 @@ function loadUsers() {
  * Load accident logs from JSON file
  */
 function loadAccidentLogs() {
-  // Skip file loading in Vercel serverless
-  if (process.env.VERCEL) {
-    console.log('[DB] Running in Vercel - using in-memory accident logs');
+  // Skip file loading in Vercel serverless or any serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+    console.log('[DB] Running in serverless environment - using in-memory accident logs');
     return;
   }
   
@@ -98,9 +98,9 @@ function loadAccidentLogs() {
  * Load photos from JSON file
  */
 function loadPhotos() {
-  // Skip file loading in Vercel serverless
-  if (process.env.VERCEL) {
-    console.log('[DB] Running in Vercel - using in-memory photos');
+  // Skip file loading in Vercel serverless or any serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+    console.log('[DB] Running in serverless environment - using in-memory photos');
     return;
   }
   
@@ -123,9 +123,9 @@ function loadPhotos() {
  * Save users to JSON file
  */
 function saveUsers() {
-  // Skip file saving in Vercel serverless
-  if (process.env.VERCEL) {
-    console.log('[DB] Running in Vercel - users stored in memory only');
+  // Skip file saving in Vercel serverless or any serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+    console.log('[DB] Running in serverless environment - users stored in memory only');
     return;
   }
   
@@ -140,9 +140,9 @@ function saveUsers() {
  * Save accident logs to JSON file
  */
 function saveAccidentLogs() {
-  // Skip file saving in Vercel serverless
-  if (process.env.VERCEL) {
-    console.log('[DB] Running in Vercel - accident logs stored in memory only');
+  // Skip file saving in Vercel serverless or any serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+    console.log('[DB] Running in serverless environment - accident logs stored in memory only');
     return;
   }
   
@@ -157,9 +157,9 @@ function saveAccidentLogs() {
  * Save photos to JSON file
  */
 function savePhotos() {
-  // Skip file saving in Vercel serverless
-  if (process.env.VERCEL) {
-    console.log('[DB] Running in Vercel - photos stored in memory only');
+  // Skip file saving in Vercel serverless or any serverless environment
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production' && !process.env.HOME) {
+    console.log('[DB] Running in serverless environment - photos stored in memory only');
     return;
   }
   
