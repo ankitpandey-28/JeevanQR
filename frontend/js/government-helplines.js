@@ -219,6 +219,7 @@
     try {
       const res = await fetch(API_BASE + '/api/register', {
         method: 'POST',
+        
         headers: {
           'Content-Type': 'application/json'
         },

@@ -1,7 +1,95 @@
 // Netlify serverless function handler
 // This file handles Netlify Functions and forwards requests to the Express app
 
+// Mock database for serverless environment (in-memory storage)
+const mockDatabase = {
+  users: {},
+  accidentLogs: [],
+  photos: {},
+  
+  saveUser: function(token, user) {
+    this.users[token] = user;
+    console.log('[MOCK DB] Saved user:', user.fullName);
+  },
+  
+  getUser: function(token) {
+    return this.users[token] || null;
+  },
+  
+  logAccidentLocation: function(token, locationData) {
+    const logEntry = {
+      id: Date.now(),
+      token: token,
+      ...locationData
+    };
+    this.accidentLogs.push(logEntry);
+    console.log('[MOCK DB] Accident location logged for:', locationData.userName);
+  },
+  
+  logPhotoUpload: function(token, photoInfo) {
+    this.photos[photoInfo.viewToken] = {
+      ...photoInfo,
+      token: token,
+      viewed: false,
+      createdAt: new Date().toISOString()
+    };
+    console.log('[MOCK DB] Photo uploaded:', photoInfo.filename);
+  },
+  
+  getPhotoByViewToken: function(viewToken) {
+    return this.photos[viewToken] || null;
+  },
+  
+  markPhotoAsViewed: function(viewToken) {
+    if (this.photos[viewToken]) {
+      this.photos[viewToken].viewed = true;
+      this.photos[viewToken].viewedAt = new Date().toISOString();
+      console.log('[MOCK DB] Photo marked as viewed');
+    }
+  },
+  
+  getStats: function() {
+    return {
+      totalUsers: Object.keys(this.users).length,
+      totalAccidentLogs: this.accidentLogs.length,
+      totalPhotos: Object.keys(this.photos).length,
+      lastUpdated: new Date().toISOString()
+    };
+  }
+};
+
+// Override the database module to use mock database
+const originalRequire = require;
+require = function(id) {
+  if (id === './database') {
+    return mockDatabase;
+  }
+  return originalRequire.apply(this, arguments);
+};
+
+// Override multer to work in serverless environment
+const multer = require('multer');
+const originalMulter = multer.single;
+multer.single = function(fieldName) {
+  return function(req, res, next) {
+    // In serverless, we'll handle file uploads differently
+    // For now, skip file upload functionality
+    req.file = null;
+    next();
+  };
+};
+
+// Override fs operations for serverless
+const fs = require('fs');
+const originalMkdirSync = fs.mkdirSync;
+const originalExistsSync = fs.existsSync;
+fs.mkdirSync = function() { /* No-op in serverless */ };
+fs.existsSync = function() { return false; };
+
 const app = require('../../backend/server');
+
+// Restore original require
+require = originalRequire;
 
 // Netlify Functions export handler
 exports.handler = async (event, context) => {
