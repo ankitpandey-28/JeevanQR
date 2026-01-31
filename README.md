@@ -1,40 +1,40 @@
-# QR-based Emergency Alert System for Road Accidents (India)
+# JeevanQR - Emergency QR Code System
 
-A lightweight, web-based emergency alert system designed for Indian road users. Users can generate a QR code containing their emergency information, which can be scanned by anyone during an accident to quickly contact family members and emergency services.
+> A life-saving QR code system for Indian road users. Generate a QR code with your emergency information that anyone can scan during an accident to quickly contact your family and emergency services.
 
 ---
 
-## Project Structure
+## Table of Contents
 
-```
-QR-based Emergency Alert System/
-│
-├── frontend/                    # FRONTEND (Client-side)
-│   ├── index.html              # Registration page
-│   ├── qr.html                 # QR display/download page
-│   ├── scan.html               # Emergency page (for rescuers)
-│   ├── css/
-│   │   └── styles.css          # Red/white emergency theme
-│   └── js/
-│       ├── register.js         # Registration form logic
-│       ├── qr.js               # QR display logic
-│       └── scan.js             # Emergency page logic
-│
-├── backend/                     # BACKEND (Server-side)
-│   ├── server.js               # Express.js server (routes + APIs)
-│   └── database.js             # Database module (CRUD operations)
-│
-├── database/                    # DATABASE (Data storage)
-│   ├── users.json              # User records (token -> user data)
-│   └── accident_logs.json      # Accident location logs
-│
-├── package.json                # Node.js dependencies & scripts
-├── Procfile                    # Heroku/Render deployment
-├── vercel.json                 # Vercel deployment config
-├── render.yaml                 # Render.com deployment config
-├── .gitignore                  # Git ignore rules
-└── README.md                   # This file
-```
+- [About](#about)
+- [Features](#features)
+- [Demo](#demo)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Deployment](#deployment)
+- [API Reference](#api-reference)
+- [How It Works](#how-it-works)
+- [Security & Privacy](#security--privacy)
+- [Good Samaritan Law](#good-samaritan-law-india)
+- [License](#license)
+
+---
+
+## About
+
+**JeevanQR** (जीवन QR) is a web-based emergency alert system designed specifically for Indian road users. The name "Jeevan" means "Life" in Hindi.
+
+### Problem Statement
+- Road accidents in India kill over 150,000 people annually
+- Victims often can't communicate their identity or contact information
+- Bystanders hesitate to help due to lack of information
+
+### Solution
+- Users create a QR code with their emergency details
+- QR code can be placed on helmets, bikes, or cars
+- Anyone can scan it during emergencies to get help quickly
+- No app installation required - works on any smartphone
 
 ---
 
@@ -42,15 +42,28 @@ QR-based Emergency Alert System/
 
 | Feature | Description |
 |---------|-------------|
-| Simple Registration | Enter name, blood group, and emergency contact |
-| QR Code Generation | Downloadable/printable QR for helmet, bike, or car |
-| No Login Required | Rescuers can scan and help without authentication |
-| Privacy-First | Emergency contact number hidden from web page |
-| Indian Helplines | One-tap call to 112 (Emergency) and 108 (Ambulance) |
-| Location Sharing | Capture GPS and share via SMS/WhatsApp |
-| Bilingual UI | English + Hindi for Indian users |
-| Mobile-First | Optimized for Android, works on 2G/3G |
-| Good Samaritan Compliant | Legal protection message for rescuers |
+| **Multi-Step Registration** | Name, blood group, emergency contacts & government helplines |
+| **QR Code Generation** | Downloadable/printable QR for helmet, bike, or car |
+| **No Login Required** | Rescuers can scan and help without authentication |
+| **Privacy-First** | Emergency contact numbers hidden from web page |
+| **Indian Helplines** | One-tap call to 112, 108, 101, 102, 1091 |
+| **Location Sharing** | Capture GPS and share via SMS/WhatsApp |
+| **Emergency Camera** | Capture accident scene photos |
+| **Bilingual UI** | English + Hindi for Indian users |
+| **Mobile-First** | Optimized for Android, works on 2G/3G |
+| **Serverless Ready** | Works on Vercel with self-contained tokens |
+
+---
+
+## Demo
+
+### User Flow
+
+1. **Register** - Enter your name, blood group, emergency contacts
+2. **Add Helplines** - Select government helplines (112, 108, etc.)
+3. **Generate QR** - Download and print your emergency QR code
+4. **Attach QR** - Place on helmet, bike, or car dashboard
+5. **Emergency** - If accident occurs, anyone can scan and help
 
 ---
 
@@ -59,170 +72,194 @@ QR-based Emergency Alert System/
 | Layer | Technology |
 |-------|------------|
 | **Frontend** | HTML5, CSS3, Vanilla JavaScript |
-| **Backend** | Node.js with Express.js |
-| **Database** | JSON file storage |
+| **Backend** | Node.js + Express.js |
+| **Database** | JSON file storage (local) / Self-contained tokens (serverless) |
 | **QR Generation** | `qrcode` npm package |
+| **Deployment** | Vercel (recommended) |
 | **Maps** | Google Maps links (no API key needed) |
 
 ---
 
-## Installation & Running
+## Project Structure
+
+```
+JeevanQR/
+├── frontend/                    # Client-side files
+│   ├── index.html              # Registration page
+│   ├── emergency-contacts.html # Emergency contacts form
+│   ├── government-helplines.html # Helplines selection
+│   ├── privacy-settings.html   # Privacy options
+│   ├── qr.html                 # QR display/download page
+│   ├── scan.html               # Emergency page (for rescuers)
+│   ├── photo-view.html         # Emergency photo viewer
+│   ├── css/
+│   │   └── styles.css          # Red/white emergency theme
+│   └── js/
+│       ├── config.js           # API configuration
+│       ├── register.js         # Registration logic
+│       ├── emergency-contacts.js # Contacts management
+│       ├── government-helplines.js # Helplines & QR generation
+│       ├── qr.js               # QR display logic
+│       ├── scan.js             # Emergency page logic
+│       ├── location-sharing.js # GPS & sharing service
+│       └── emergency-camera.js # Camera capture service
+│
+├── backend/                     # Server-side files
+│   ├── server.js               # Express.js server
+│   └── database.js             # Database operations
+│
+├── database/                    # Local data storage
+│   ├── users.json              # User records
+│   └── accident_logs.json      # Accident location logs
+│
+├── package.json                # Dependencies & scripts
+├── vercel.json                 # Vercel deployment config
+├── .gitignore                  # Git ignore rules
+└── README.md                   # Documentation
+```
+
+---
+
+## Installation
 
 ### Prerequisites
-- Node.js v16 or higher ([Download](https://nodejs.org))
 
-### Steps
+- Node.js v16 or higher - [Download](https://nodejs.org)
+- Git - [Download](https://git-scm.com)
 
-1. **Open terminal** in project folder:
-   ```bash
-   cd "QR-based Emergency Alert System for Road Accidents"
-   ```
+### Local Development
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+```bash
+# 1. Clone the repository
+git clone https://github.com/ankitpandey-28/JeevanQR.git
 
-3. **Start the server**:
-   ```bash
-   npm start
-   ```
+# 2. Navigate to project directory
+cd JeevanQR
 
-4. **Open in browser**:
-   ```
-   http://localhost:3000
-   ```
+# 3. Install dependencies
+npm install
 
----
+# 4. Start development server
+npm start
 
-## API Endpoints
-
-### Frontend Routes
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Registration page |
-| GET | `/qr.html` | QR display page |
-| GET | `/scan/:token` | Emergency page (rescuer view) |
-
-### Backend APIs
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/register` | Register user, returns token |
-| GET | `/api/qr/:token` | Get QR code image (PNG) |
-| GET | `/api/users/:token/public` | Get public user info |
-| POST | `/api/users/:token/location` | Log accident location |
-| GET | `/api/stats` | Get database statistics |
-
----
-
-## Data Flow
-
-### 1. Registration Flow
-```
-User → index.html → POST /api/register → backend/server.js
-                                              ↓
-                                     backend/database.js
-                                              ↓
-                                     database/users.json
-                                              ↓
-                                     Return token + QR URL
-```
-
-### 2. QR Scan Flow
-```
-Rescuer scans QR → Opens /scan/:token → scan.html
-                                              ↓
-                                     GET /api/users/:token/public
-                                              ↓
-                                     backend/database.js → users.json
-                                              ↓
-                                     Display name + blood group
-```
-
-### 3. Location Share Flow
-```
-Rescuer clicks "Share Location" → Browser Geolocation API
-                                              ↓
-                                     POST /api/users/:token/location
-                                              ↓
-                                     database/accident_logs.json
-                                              ↓
-                                     Share via SMS/WhatsApp
-```
-
----
-
-## Database Schema
-
-### users.json
-```json
-{
-  "a1b2c3d4e5f6...": {
-    "fullName": "Rajesh Kumar",
-    "bloodGroup": "O+",
-    "emergencyContact": "9876543210",
-    "createdAt": "2026-01-29T10:30:00.000Z"
-  }
-}
-```
-
-### accident_logs.json
-```json
-[
-  {
-    "id": 1706520600000,
-    "token": "a1b2c3d4e5f6...",
-    "userName": "Rajesh Kumar",
-    "latitude": 28.6139,
-    "longitude": 77.2090,
-    "mapsUrl": "https://www.google.com/maps?q=28.6139,77.2090",
-    "reportedAt": "2026-01-29T10:30:00.000Z"
-  }
-]
+# 5. Open in browser
+# http://localhost:3000
 ```
 
 ---
 
 ## Deployment
 
-### Option 1: Render.com (Recommended - Free)
+### Vercel (Recommended)
 
-1. Push code to GitHub
-2. Go to [render.com](https://render.com) → New Web Service
-3. Connect GitHub repo
-4. Settings:
-   - Build Command: `npm install`
-   - Start Command: `node backend/server.js`
-5. Deploy → Get public URL
+1. **Push to GitHub** (if not already done)
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
 
-### Option 2: Railway.app
+2. **Deploy on Vercel**
+   - Go to [vercel.com](https://vercel.com)
+   - Click "New Project"
+   - Import your GitHub repository
+   - Framework Preset: **Other**
+   - Click **Deploy**
 
-1. Go to [railway.app](https://railway.app)
-2. New Project → Deploy from GitHub
-3. Auto-detects Node.js
-4. Get public URL
+3. **Done!** Your app will be live at `https://your-project.vercel.app`
 
-### Option 3: Vercel
+### Environment Variables (Optional)
 
+| Variable | Description |
+|----------|-------------|
+| `SITE_URL` | Custom domain URL (e.g., `https://jeevanqr.com`) |
+
+---
+
+## API Reference
+
+### Frontend Routes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Registration page |
+| GET | `/emergency-contacts.html` | Emergency contacts form |
+| GET | `/government-helplines.html` | Helplines selection |
+| GET | `/qr.html?token=xxx` | QR display page |
+| GET | `/scan/:token` | Emergency page (rescuer view) |
+
+### Backend APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/register` | Register user, returns token & QR URL |
+| GET | `/api/qr/:token` | Get QR code image (PNG) |
+| GET | `/api/users/:token/public` | Get public user info |
+| POST | `/api/users/:token/location` | Log accident location |
+| POST | `/api/upload-photo` | Upload emergency photo |
+| GET | `/api/stats` | Get database statistics |
+
+### Request/Response Examples
+
+**Register User**
 ```bash
-npm i -g vercel
-vercel
+POST /api/register
+Content-Type: application/json
+
+{
+  "fullName": "Rajesh Kumar",
+  "bloodGroup": "O+",
+  "emergencyContacts": [
+    { "name": "Wife", "phone": "9876543210" }
+  ],
+  "governmentHelplines": [
+    { "name": "Emergency", "number": "112" }
+  ]
+}
 ```
 
-### Option 4: Local Network Demo
+**Response**
+```json
+{
+  "token": "eyJuIjoiUmFqZXNoIEt1bWFyIi...",
+  "publicUrl": "/scan/eyJuIjoiUmFqZXNoIEt1bWFyIi...",
+  "qrImageUrl": "/api/qr/eyJuIjoiUmFqZXNoIEt1bWFyIi..."
+}
+```
 
-```bash
-# Find your IP
-ipconfig  # Windows
-ifconfig  # Mac/Linux
+---
 
-# Start server
-npm start
+## How It Works
 
-# Access from phone (same WiFi)
-http://YOUR_IP:3000
+### Registration Flow
+```
+User fills form → Emergency Contacts → Government Helplines
+                                              ↓
+                                     POST /api/register
+                                              ↓
+                                     Generate self-contained token
+                                              ↓
+                                     Return QR code URL
+```
+
+### Emergency Scan Flow
+```
+Rescuer scans QR → Opens full URL (https://site.com/scan/token)
+                                              ↓
+                              Token contains all user data
+                                              ↓
+                              Display name, blood group, contacts
+                                              ↓
+                              One-tap call to emergency contacts
+```
+
+### Location Sharing Flow
+```
+Rescuer clicks "Share Location" → Get GPS coordinates
+                                              ↓
+                                     Generate Google Maps link
+                                              ↓
+                              Share via SMS/WhatsApp to all contacts
 ```
 
 ---
@@ -231,11 +268,12 @@ http://YOUR_IP:3000
 
 | Aspect | Implementation |
 |--------|----------------|
-| Hidden Phone Number | Never displayed on scan page, only used in `tel:` link |
-| Token-Based Access | Random 32-char hex tokens prevent guessing |
-| No Authentication | Privacy by design - minimal data collection |
-| Read-Only Scan Page | Rescuers cannot modify any data |
-| Base64 Encoding | Phone number encoded before sending to client |
+| **Hidden Phone Numbers** | Never displayed on page, only used in `tel:` links |
+| **Self-Contained Tokens** | User data encoded in token, no database lookup needed |
+| **No Authentication** | Privacy by design - minimal data collection |
+| **Read-Only Scan Page** | Rescuers cannot modify any data |
+| **Base64 Encoding** | Phone numbers encoded before sending to client |
+| **HTTPS Only** | All traffic encrypted in production |
 
 ---
 
@@ -247,34 +285,34 @@ The system displays this message to rescuers:
 >
 > **Hindi:** "आप मदद कर रहे हैं, कानून के अनुसार आप सुरक्षित हैं।"
 
-This complies with Supreme Court of India's 2016 guidelines.
+This complies with Supreme Court of India's 2016 guidelines that protect Good Samaritans from legal harassment.
 
 ---
 
-## For Exam/Viva
+## Contributing
 
-### Key Points
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. **Why web-based?** Works on any phone without app installation
-2. **Why no login for rescuer?** Emergency needs instant access
-3. **How is privacy maintained?** Phone number hidden, only `tel:` link used
-4. **Why JSON storage?** Lightweight, no DB setup, easy to understand
-5. **Why separate folders?** Clean architecture (frontend/backend/database)
-
-### Demo Steps
-
-1. Start server: `npm start`
-2. Open `localhost:3000` on laptop
-3. Register with sample data
-4. Show QR generation
-5. Scan QR with phone → Emergency page opens
-6. Demo call buttons and location sharing
-7. Show `database/users.json` to explain storage
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## License
 
-MIT License - Free for educational and personal use.
-#   J e e v a n Q R  
- 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+- Inspired by the need for better road safety in India
+- Thanks to all contributors and testers
+- Dedicated to saving lives on Indian roads
+
+---
+
+**Made with love for India**
