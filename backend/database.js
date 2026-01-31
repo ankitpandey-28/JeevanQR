@@ -1,6 +1,7 @@
 /**
  * QR Emergency Alert System - Database Module
  * Simple JSON file-based storage for users and accident logs
+ * Modified for Vercel serverless compatibility
  */
 
 const fs = require('fs');
@@ -16,7 +17,7 @@ const LOGS_FILE = path.join(DATABASE_DIR, 'accident_logs.json');
 const PHOTOS_FILE = path.join(DATABASE_DIR, 'photos.json');
 
 // ============================================
-// IN-MEMORY STORAGE
+// IN-MEMORY STORAGE (for Vercel serverless)
 // ============================================
 
 let users = {};          // token -> user object
@@ -31,6 +32,12 @@ let photos = {};         // viewToken -> photo info
  * Ensure database directory exists
  */
 function ensureDatabaseDir() {
+  // Skip directory creation in Vercel serverless
+  if (process.env.VERCEL) {
+    console.log('[DB] Running in Vercel - using in-memory storage');
+    return;
+  }
+  
   if (!fs.existsSync(DATABASE_DIR)) {
     fs.mkdirSync(DATABASE_DIR, { recursive: true });
     console.log('[DB] Created database directory:', DATABASE_DIR);
@@ -41,6 +48,12 @@ function ensureDatabaseDir() {
  * Load users from JSON file
  */
 function loadUsers() {
+  // Skip file loading in Vercel serverless
+  if (process.env.VERCEL) {
+    console.log('[DB] Running in Vercel - using in-memory users');
+    return;
+  }
+  
   try {
     if (fs.existsSync(USERS_FILE)) {
       const raw = fs.readFileSync(USERS_FILE, 'utf8');
@@ -60,6 +73,12 @@ function loadUsers() {
  * Load accident logs from JSON file
  */
 function loadAccidentLogs() {
+  // Skip file loading in Vercel serverless
+  if (process.env.VERCEL) {
+    console.log('[DB] Running in Vercel - using in-memory accident logs');
+    return;
+  }
+  
   try {
     if (fs.existsSync(LOGS_FILE)) {
       const raw = fs.readFileSync(LOGS_FILE, 'utf8');
@@ -79,6 +98,12 @@ function loadAccidentLogs() {
  * Load photos from JSON file
  */
 function loadPhotos() {
+  // Skip file loading in Vercel serverless
+  if (process.env.VERCEL) {
+    console.log('[DB] Running in Vercel - using in-memory photos');
+    return;
+  }
+  
   try {
     if (fs.existsSync(PHOTOS_FILE)) {
       const raw = fs.readFileSync(PHOTOS_FILE, 'utf8');
@@ -98,6 +123,12 @@ function loadPhotos() {
  * Save users to JSON file
  */
 function saveUsers() {
+  // Skip file saving in Vercel serverless
+  if (process.env.VERCEL) {
+    console.log('[DB] Running in Vercel - users stored in memory only');
+    return;
+  }
+  
   try {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
   } catch (err) {
@@ -109,6 +140,12 @@ function saveUsers() {
  * Save accident logs to JSON file
  */
 function saveAccidentLogs() {
+  // Skip file saving in Vercel serverless
+  if (process.env.VERCEL) {
+    console.log('[DB] Running in Vercel - accident logs stored in memory only');
+    return;
+  }
+  
   try {
     fs.writeFileSync(LOGS_FILE, JSON.stringify(accidentLogs, null, 2), 'utf8');
   } catch (err) {
@@ -120,6 +157,12 @@ function saveAccidentLogs() {
  * Save photos to JSON file
  */
 function savePhotos() {
+  // Skip file saving in Vercel serverless
+  if (process.env.VERCEL) {
+    console.log('[DB] Running in Vercel - photos stored in memory only');
+    return;
+  }
+  
   try {
     fs.writeFileSync(PHOTOS_FILE, JSON.stringify(photos, null, 2), 'utf8');
   } catch (err) {
