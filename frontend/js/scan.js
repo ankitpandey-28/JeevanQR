@@ -344,12 +344,6 @@
       return;
     }
 
-    async function handleGetLocation() {
-    if (!locationService || !patientData) {
-      locationStatus.textContent = 'Service not ready. कृपया प्रतीक्षा करें।';
-      return;
-    }
-
     locationStatus.textContent = 'Getting GPS location... GPS लोकेशन ली जा रही है...';
     sharingProgress.classList.add('hidden');
     sharingResults.classList.add('hidden');
