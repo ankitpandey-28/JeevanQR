@@ -115,6 +115,43 @@ function generateToken() {
 }
 
 /**
+ * Encode user data into a self-contained token (for serverless compatibility)
+ * @param {object} user - User data
+ * @returns {string} Base64-encoded token
+ */
+function encodeUserToken(user) {
+  const data = {
+    n: user.fullName,
+    b: user.bloodGroup,
+    e: user.emergencyContacts.map(c => ({ n: c.name, p: c.phone })),
+    g: user.governmentHelplines.map(h => ({ n: h.name, p: h.number })),
+    t: Date.now()
+  };
+  return Buffer.from(JSON.stringify(data), 'utf8').toString('base64url');
+}
+
+/**
+ * Decode user data from self-contained token
+ * @param {string} token - Base64-encoded token
+ * @returns {object|null} User data or null if invalid
+ */
+function decodeUserToken(token) {
+  try {
+    const data = JSON.parse(Buffer.from(token, 'base64url').toString('utf8'));
+    return {
+      fullName: data.n,
+      bloodGroup: data.b,
+      emergencyContacts: data.e.map(c => ({ name: c.n, phone: c.p })),
+      governmentHelplines: data.g.map(h => ({ name: h.n, number: h.p })),
+      createdAt: new Date(data.t).toISOString()
+    };
+  } catch (err) {
+    console.error('Failed to decode token:', err.message);
+    return null;
+  }
+}
+
+/**
  * Validate Indian phone number format
  * @param {string} phone - Phone number to validate
  * @returns {boolean}
@@ -226,9 +263,6 @@ app.post('/api/register', (req, res) => {
     }
   }
 
-  // Generate unique token
-  const token = generateToken();
-
   // Create user record
   const user = {
     fullName: fullName.trim(),
@@ -244,7 +278,11 @@ app.post('/api/register', (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  // Save to database
+  // Generate self-contained token (for serverless compatibility)
+  // The token itself contains all user data, so no database lookup needed
+  const token = encodeUserToken(user);
+  
+  // Also save to database for backward compatibility (local dev)
   db.saveUser(token, user);
 
   // Build response URLs (use relative URLs for universal compatibility)
@@ -264,25 +302,45 @@ app.post('/api/register', (req, res) => {
 app.get('/api/qr/:token', async (req, res) => {
   const { token } = req.params;
   
-  // Check if user exists
-  const user = db.getUser(token);
+  // Try to decode user from token (self-contained token)
+  // Falls back to database lookup for backward compatibility
+  let user = decodeUserToken(token);
+  if (!user) {
+    user = db.getUser(token);
+  }
+  
   if (!user) {
     return res.status(404).send('Unknown QR code');
   }
 
-  // Build URL to encode in QR
-  // Use relative URL for universal compatibility across domains
-  const publicUrl = `/scan/${token}`;
+  // Build FULL absolute URL for QR code (required for scanning to work!)
+  // Priority: SITE_URL env var > VERCEL_URL > request host > localhost fallback
+  const protocol = req.protocol || 'https';
+  const host = process.env.SITE_URL || 
+               process.env.VERCEL_URL || 
+               req.get('host') || 
+               'localhost:3000';
+  
+  // Remove protocol if already in env var
+  const cleanHost = host.replace(/^https?:\/\//, '');
+  const baseUrl = process.env.SITE_URL ? 
+                  (process.env.SITE_URL.startsWith('http') ? process.env.SITE_URL : `https://${cleanHost}`) :
+                  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `${protocol}://${cleanHost}`);
+  
+  const publicUrl = `${baseUrl}/scan/${token}`;
+  console.log('[QR] Generating QR with URL:', publicUrl);
 
   try {
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
     
-    await QRCode.toFileStream(res, publicUrl, {
+    // Use toBuffer for universal compatibility (works in both serverless and local)
+    const qrBuffer = await QRCode.toBuffer(publicUrl, {
       errorCorrectionLevel: 'M',
       margin: 1,
       width: 512
     });
+    res.send(qrBuffer);
   } catch (err) {
     console.error('QR generation failed:', err);
     res.status(500).send('Failed to generate QR code');
@@ -296,7 +354,13 @@ app.get('/api/qr/:token', async (req, res) => {
 app.get('/api/users/:token/public', (req, res) => {
   const { token } = req.params;
   
-  const user = db.getUser(token);
+  // Try to decode user from token (self-contained token)
+  // Falls back to database lookup for backward compatibility
+  let user = decodeUserToken(token);
+  if (!user) {
+    user = db.getUser(token);
+  }
+  
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
   }
@@ -321,7 +385,13 @@ app.get('/api/users/:token/public', (req, res) => {
 app.post('/api/users/:token/location', (req, res) => {
   const { token } = req.params;
   
-  const user = db.getUser(token);
+  // Try to decode user from token (self-contained token)
+  // Falls back to database lookup for backward compatibility
+  let user = decodeUserToken(token);
+  if (!user) {
+    user = db.getUser(token);
+  }
+  
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
   }

@@ -23,7 +23,7 @@
   // Get token from URL
   const token = getQueryParam('token');
 
-  // API base (can be set by /js/config.js). Leave empty to use relative paths.
+  // API base - empty for same-origin requests
   const API_BASE = window.API_BASE || '';
 
   if (!token) {
@@ -33,5 +33,21 @@
   } else {
     const qrSrc = API_BASE + '/api/qr/' + encodeURIComponent(token);
     qrImage.src = qrSrc;
+    
+    // Add error handling for image load
+    qrImage.onerror = function() {
+      qrInfo.innerHTML =
+        '<span class="error">Unable to load QR code. Please try again. QR लोड नहीं हो पाया।</span>';
+      qrImage.style.display = 'none';
+    };
+    
+    qrImage.onload = function() {
+      qrInfo.innerHTML = `
+        <p class="info-text">
+          Long press on the QR image to download / save to your phone gallery.<br />
+          QR इमेज को लंबा दबाकर अपने फोन में सेव करें।
+        </p>
+      `;
+    };
   }
 })();

@@ -1,7 +1,8 @@
 // Frontend API base configuration
-// Set `window.API_BASE` to the backend base URL when hosting frontend separately.
-// Default is empty string so relative `/api` works when backend serves frontend.
+// Default is empty string so relative `/api` works when frontend and backend are on same origin.
 (function () {
-  // For Vercel deployment, use relative paths (same origin)
-  window.API_BASE = window.API_BASE || '';
+  'use strict';
+  // Use empty string for same-origin deployment (Vercel, etc.)
+  // This ensures all API calls go to the same domain the page is served from
+  window.API_BASE = '';
 })();
