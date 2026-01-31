@@ -181,6 +181,16 @@ button.primary:active {
   margin-top: 4px;
 }
 
+.success-text {
+  color: #006400;
+  font-weight: 600;
+}
+
+.warning-text {
+  color: #ff6600;
+  font-weight: 600;
+}
+
 .small {
   font-size: 0.75rem;
 }
@@ -210,6 +220,20 @@ button.primary:active {
   font-size: 1rem;
   font-weight: 700;
   color: #b80000;
+}
+
+.contact-display {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #006600;
+  margin-top: 4px;
+}
+
+.helpline-display {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ff6600;
+  margin-top: 2px;
 }
 
 .pill {
@@ -265,6 +289,53 @@ button.primary:active {
 /* ============================================
    UTILITIES
    ============================================ */
+
+.btn-remove {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.btn-remove:hover {
+  background-color: #c82333;
+}
+
+.contact-item,
+.helpline-item {
+  margin-bottom: 8px;
+}
+
+.privacy-option {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+.privacy-option input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  transform: scale(1.2);
+}
+
+.result-item {
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f0f8ff;
+  border-left: 4px solid #006400;
+  font-size: 0.9rem;
+}
+
+.result-item small {
+  color: #d00020;
+  font-size: 0.8rem;
+}
 
 .hidden {
   display: none !important;

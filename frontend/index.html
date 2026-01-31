@@ -13,6 +13,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="stylesheet" href="/css/styles.css" />
+    <script src="/js/config.js"></script>
   </head>
   <body>
     <header class="header">
@@ -56,26 +57,9 @@
             <option value="AB-">AB-</option>
           </select>
 
-          <label for="emergencyContact">
-            Emergency Contact Number (Family/Friend) <br />
-            आपातकालीन संपर्क नंबर (परिवार / मित्र)
-          </label>
-          <input
-            id="emergencyContact"
-            name="emergencyContact"
-            type="tel"
-            required
-            inputmode="tel"
-            pattern="[0-9+\-\s]{10,15}"
-            placeholder="e.g. 9876543210"
-          />
-          <div class="info-text">
-            Prefer Indian mobile number with STD / ISD code if needed.
-          </div>
-
           <button type="submit" class="primary" id="generateBtn">
-            Generate Emergency QR<br />
-            आपातकालीन QR बनाएं
+            Next: Add Emergency Contacts<br />
+            अगला: आपातकालीन संपर्क जोड़ें
           </button>
         </form>
 

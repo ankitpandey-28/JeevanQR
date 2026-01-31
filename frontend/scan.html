@@ -13,6 +13,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="stylesheet" href="/css/styles.css" />
+    <script src="/js/config.js"></script>
   </head>
   <body>
     <header class="header">
@@ -33,41 +34,58 @@
 
       <section class="card">
         <h2 style="margin-top: 0; font-size: 1rem">
-          Call Emergency Contact<br />
-          आपातकालीन संपर्क को कॉल करें
+          Emergency Contacts<br />
+          आपातकालीन संपर्क
         </h2>
-        <button id="callPersonalBtn" class="btn-large btn-call">
-          📞 Call Emergency Contact<br />
-          📞 आपातकालीन संपर्क को कॉल करें
-        </button>
-        <p class="info-text">
-          Number is kept private on this page. Only the family member will see
-          your phone number.
-          <br />
-          नंबर इस पेज पर नहीं दिखाया जाता है। केवल परिवार का सदस्य आपका नंबर
-          देखेगा।
-        </p>
+        <div id="emergencyContactsList"></div>
       </section>
 
       <section class="card">
         <h2 style="margin-top: 0; font-size: 1rem">
-          Indian Emergency Helplines<br />
-          भारतीय आपातकालीन हेल्पलाइन
+          Government Helplines<br />
+          सरकारी हेल्पलाइन
         </h2>
-        <button
-          class="btn-large btn-helpline"
-          onclick="window.location.href='tel:112'"
-        >
-          🚨 Call 112 (All-in-one Emergency)<br />
-          🚨 112 पर कॉल करें (सभी आपातकाल)
+        <div id="governmentHelplinesList"></div>
+      </section>
+
+      <section class="card">
+        <h2 style="margin-top: 0; font-size: 1rem">
+          📸 Accident Photo (One-Time)<br />
+          📸 दुर्घटना फोटो (एक बार)
+        </h2>
+        
+        <div class="info-text">
+          Take a photo of the accident scene to help emergency responders understand the situation better.
+          This photo will be shared automatically with all emergency contacts and can only be viewed once.
+          <br><br>
+          दुर्घटना स्थल की फोटो लें ताकि आपातकालीन प्रतिक्रियाकर्ताओं को स्थिति को बेहतर समझ सकें।
+          यह फोटो स्वचालित रूप से सभी आपातकालीन संपर्कों के साथ साझा की जाएगी और केवल एक बार देखी जा सकती है।
+        </div>
+
+        <button id="cameraBtn" class="btn-large btn-secondary">
+          📸 Take Accident Photo<br />
+          📸 दुर्घटना फोटो लें
         </button>
-        <button
-          class="btn-large btn-helpline"
-          onclick="window.location.href='tel:108'"
-        >
-          🚑 Call 108 (Ambulance)<br />
-          🚑 108 पर कॉल करें (एम्बुलेंस)
-        </button>
+        
+        <div id="cameraStatus" class="info-text"></div>
+        <div id="cameraPreview" class="hidden">
+          <video id="cameraVideo" style="width: 100%; max-width: 400px; border-radius: 8px;"></video>
+          <div style="margin-top: 12px;">
+            <button id="captureBtn" class="btn-large btn-primary">
+              📸 Capture Photo<br />
+              📸 फोटो कैप्चर करें
+            </button>
+            <button id="cancelCameraBtn" class="btn-secondary">
+              ❌ Cancel<br />
+              ❌ रद्द करें
+            </button>
+          </div>
+        </div>
+        
+        <div id="photoResult" class="hidden">
+          <img id="capturedPhoto" style="width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 12px;" />
+          <div id="photoStatus" class="info-text"></div>
+        </div>
       </section>
 
       <section class="card">
@@ -75,20 +93,34 @@
           Share Accident Location<br />
           दुर्घटना स्थान साझा करें
         </h2>
+        
+        <div id="connectivityStatus" class="info-text">
+          Checking connectivity... कनेक्टिविटी जांच रहे हैं...
+        </div>
+
         <button id="locationBtn" class="btn-large btn-location">
-          📍 Share Accident Location<br />
-          📍 दुर्घटना स्थान साझा करें
+          📍 Auto-Share Location to All Contacts<br />
+          📍 सभी संपर्कों को स्वचालित रूप से स्थान भेजें
         </button>
+        
         <div id="locationStatus" class="info-text"></div>
         <div id="locationBox" class="location-box hidden"></div>
-        <button
-          id="shareLocationBtn"
-          class="btn-large btn-secondary hidden"
-          type="button"
-        >
-          🔁 Share via SMS / WhatsApp<br />
-          🔁 SMS / WhatsApp से शेयर करें
-        </button>
+        
+        <div id="sharingProgress" class="hidden">
+          <h3 style="margin: 16px 0 8px 0; font-size: 1rem;">
+            Sharing Location...<br />
+            स्थान साझा कर रहे हैं...
+          </h3>
+          <div id="progressStatus"></div>
+        </div>
+        
+        <div id="sharingResults" class="hidden">
+          <h3 style="margin: 16px 0 8px 0; font-size: 1rem;">
+            Sharing Results<br />
+            साझाकरण परिणाम
+          </h3>
+          <div id="resultsList"></div>
+        </div>
       </section>
 
       <section class="good-samaritan">
@@ -105,6 +137,8 @@
       </section>
     </main>
 
+    <script src="/js/emergency-camera.js"></script>
+    <script src="/js/location-sharing.js"></script>
     <script src="/js/scan.js"></script>
   </body>
 </html>
