@@ -296,6 +296,34 @@ app.post('/api/register', (req, res) => {
 });
 
 /**
+ * QR redirect endpoint
+ * Redirects scanner to WhatsApp chat for primary emergency contact (if available)
+ */
+app.get('/qr-redirect/:token', (req, res) => {
+  const { token } = req.params;
+
+  // Resolve user from token or database
+  let user = decodeUserToken(token);
+  if (!user) user = db.getUser(token);
+
+  if (!user) {
+    return res.status(404).send('Unknown QR code');
+  }
+
+  const primary = (user.emergencyContacts && user.emergencyContacts[0]) || null;
+  if (!primary || !primary.phone) {
+    return res.status(404).send('No emergency contact found');
+  }
+
+  const phone = cleanPhoneNumber(primary.phone);
+  const message = `🚨 EMERGENCY ALERT 🚨\nPatient: ${user.fullName}\nPlease respond immediately.`;
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  // Redirect (302) so mobile scanners open WhatsApp app if available
+  return res.redirect(302, whatsappUrl);
+});
+
+/**
  * GET /api/qr/:token
  * Generate and return QR code image (PNG)
  */
@@ -327,7 +355,8 @@ app.get('/api/qr/:token', async (req, res) => {
                   (process.env.SITE_URL.startsWith('http') ? process.env.SITE_URL : `https://${cleanHost}`) :
                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `${protocol}://${cleanHost}`);
   
-  const publicUrl = `${baseUrl}/scan/${token}`;
+  // Use QR redirect so scanners open WhatsApp chat for primary contact
+  const publicUrl = `${baseUrl}/qr-redirect/${token}`;
   console.log('[QR] Generating QR with URL:', publicUrl);
 
   try {
