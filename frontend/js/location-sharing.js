@@ -60,42 +60,36 @@ class LocationSharingService {
       throw new Error('Location data not available');
     }
 
-    let message = `🚨 EMERGENCY ALERT 🚨\n`;
-    message += `Patient: ${patientName}\n`;
-    message += `Location: ${this.locationData.coordinates}\n`;
-    message += `Accuracy: ±${Math.round(this.locationData.accuracy)} meters\n`;
-    message += `Time: ${new Date(this.locationData.timestamp).toLocaleString()}\n`;
-    
+    let message = `🚨 EMERGENCY ALERT 🚨\n\n`;
+    message += `Patient: ${patientName}\n\n`;
+
     if (includeMapsUrl && this.locationData.mapsUrl) {
-      message += `\n📍 Google Maps: ${this.locationData.mapsUrl}`;
+      message += `📍 Live Location:\n${this.locationData.mapsUrl}\n\n`;
     }
+
+    message += `Accuracy: ±${Math.round(this.locationData.accuracy)}m\n`;
+    message += `Time: ${new Date(this.locationData.timestamp).toLocaleString()}`;
 
     return message;
   }
 
   /**
-   * Share location via internet (WhatsApp, Email, etc.)
+   * Share location via internet using WhatsApp link
    */
   async shareLocationOnline(patientName, contacts) {
     try {
       const message = this.generateLocationMessage(patientName);
-      
-      // Try Web Share API first
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Emergency Location',
-          text: message
-        });
-        return { success: true, method: 'Web Share API' };
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      const opened = window.open(whatsappUrl, '_blank');
+      if (!opened) {
+        window.location.href = whatsappUrl;
       }
 
-      // Fallback to clipboard
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(message);
-        return { success: true, method: 'Clipboard', message: 'Location copied to clipboard' };
-      }
-
-      throw new Error('No sharing method available');
+      return {
+        success: true,
+        method: 'WhatsApp',
+        message: 'Opened WhatsApp share window. Select the recipient manually.'
+      };
     } catch (error) {
       throw new Error(`Online sharing failed: ${error.message}`);
     }
@@ -170,32 +164,26 @@ class LocationSharingService {
   }
 
   /**
-   * Auto share via online methods
+   * Auto share via online methods using a single WhatsApp window
    */
   async autoShareOnline(patientName, contacts, message) {
-    // Try WhatsApp Web first
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    
-    // Create a sequence of WhatsApp links for multiple contacts
-    const sharePromises = contacts.map((contact, index) => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const contactMessage = message.replace(/🚨 EMERGENCY ALERT 🚨/, `🚨 EMERGENCY ALERT for ${patientName} 🚨`);
-          const whatsappUrl = `https://wa.me/${contact.phone.replace(/\D/g, '')}?text=${encodeURIComponent(contactMessage)}`;
-          
-          // Open WhatsApp in new tab
-          window.open(whatsappUrl, '_blank');
-          resolve({ contact: contact.name, method: 'WhatsApp', status: 'opened' });
-        }, index * 1000); // Stagger openings to avoid overwhelming
-      });
-    });
+    const opened = window.open(whatsappUrl, '_blank');
+    if (!opened) {
+      window.location.href = whatsappUrl;
+    }
 
-    await Promise.all(sharePromises);
-    
     return {
       success: true,
-      method: 'Auto WhatsApp',
-      message: `Opened WhatsApp for ${contacts.length} emergency contacts`
+      method: 'WhatsApp',
+      results: [
+        {
+          name: 'Emergency broadcast',
+          method: 'WhatsApp',
+          status: 'opened'
+        }
+      ],
+      message: 'Opened a single WhatsApp share window. Select the emergency contact manually.'
     };
   }
 

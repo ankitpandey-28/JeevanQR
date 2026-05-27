@@ -3,6 +3,10 @@
  * Handles photo capture, upload, and secure sharing
  */
 
+// Replace these values with your Cloudinary free account details:
+const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/<your_cloud_name>/upload';
+const CLOUDINARY_UPLOAD_PRESET = '<your_unsigned_upload_preset>';
+
 class EmergencyCameraService {
   constructor() {
     this.photoData = null;
@@ -43,55 +47,80 @@ class EmergencyCameraService {
    * Capture photo from camera
    */
   async capturePhoto() {
-    return new Promise((resolve, reject) => {
-      if (!this.isCameraAvailable()) {
-        reject(new Error('Camera not available on this device'));
-        return;
-      }
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      return new Promise((resolve, reject) => {
+        navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          } 
+        })
+        .then(stream => {
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.play();
 
-      navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      })
-      .then(stream => {
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.play();
-
-        video.onloadedmetadata = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          
-          const context = canvas.getContext('2d');
-          context.drawImage(video, 0, 0);
-          
-          // Stop camera stream
-          stream.getTracks().forEach(track => track.stop());
-          
-          // Convert to blob and data URL
-          canvas.toBlob((blob) => {
-            this.photoData = blob;
-            this.photoUrl = canvas.toDataURL('image/jpeg', 0.8);
-            resolve({
-              success: true,
-              photoUrl: this.photoUrl,
-              photoData: blob
-            });
-          }, 'image/jpeg', 0.8);
-        };
-      })
-      .catch(error => {
-        reject(error);
+          video.onloadedmetadata = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0);
+            
+            // Stop camera stream
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Convert to blob and data URL
+            canvas.toBlob((blob) => {
+              this.photoData = blob;
+              this.photoUrl = canvas.toDataURL('image/jpeg', 0.8);
+              resolve({
+                success: true,
+                photoUrl: this.photoUrl,
+                photoData: blob
+              });
+            }, 'image/jpeg', 0.8);
+          };
+        })
+        .catch(error => {
+          reject(error);
+        });
       });
+    }
+
+    return new Promise((resolve, reject) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*;capture=camera';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+
+      input.onchange = async () => {
+        const file = input.files && input.files[0];
+        document.body.removeChild(input);
+
+        if (!file) {
+          reject(new Error('No photo selected'));
+          return;
+        }
+
+        this.photoData = file;
+        this.photoUrl = URL.createObjectURL(file);
+        resolve({
+          success: true,
+          photoUrl: this.photoUrl,
+          photoData: file
+        });
+      };
+
+      input.click();
     });
   }
 
   /**
-   * Upload photo to server and get secure URL
+   * Upload photo to Cloudinary and get secure URL
    */
   async uploadPhoto(token, patientName) {
     if (!this.photoData) {
@@ -99,27 +128,25 @@ class EmergencyCameraService {
     }
 
     const formData = new FormData();
-    formData.append('photo', this.photoData, `emergency-${Date.now()}.jpg`);
-    formData.append('token', token);
-    formData.append('patientName', patientName);
-    formData.append('timestamp', new Date().toISOString());
+    formData.append('file', this.photoData, `emergency-${Date.now()}.jpg`);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     try {
-      const response = await fetch('/api/upload-photo', {
+      const response = await fetch(CLOUDINARY_UPLOAD_URL, {
         method: 'POST',
         body: formData
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload photo');
+        const body = await response.text();
+        throw new Error(`Cloudinary upload failed (${response.status}): ${body}`);
       }
 
       const result = await response.json();
       return {
         success: true,
-        photoUrl: result.photoUrl,
-        secureUrl: result.secureUrl,
-        viewToken: result.viewToken
+        photoUrl: result.secure_url || result.url,
+        secureUrl: result.secure_url || result.url
       };
     } catch (error) {
       throw new Error(`Photo upload failed: ${error.message}`);
@@ -129,23 +156,54 @@ class EmergencyCameraService {
   /**
    * Generate photo sharing message
    */
-  generatePhotoMessage(patientName, photoUrl, secureUrl) {
-    return `🚨 EMERGENCY ALERT - ACCIDENT PHOTO 🚨
-Patient: ${patientName}
-Location: See attached photo
-Time: ${new Date().toLocaleString()}
+  generatePhotoMessage(patientName, photoUrl, mapsUrl) {
+    return `🚨 Accident Photo Alert\n\nPhoto:\n${photoUrl}\n\n📍 Location:\n${mapsUrl}`;
+  }
 
-📸 Accident Photo: ${secureUrl}
-⚠️ This photo will self-destruct in 24 hours
+  /**
+   * Get current location for photo sharing
+   */
+  async getLocationData() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
 
-View photo securely: ${secureUrl}`;
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            mapsUrl: `https://maps.google.com/?q=${position.coords.latitude},${position.coords.longitude}`
+          });
+        },
+        (error) => {
+          reject(error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    });
   }
 
   /**
    * Share photo to all emergency contacts
    */
   async sharePhotoToAllContacts(patientName, contacts, photoUrl, secureUrl) {
-    const message = this.generatePhotoMessage(patientName, photoUrl, secureUrl);
+    let mapsUrl = 'Location not available';
+
+    try {
+      const locationData = await this.getLocationData();
+      mapsUrl = locationData.mapsUrl;
+    } catch (error) {
+      console.warn('Unable to retrieve location for photo share:', error.message);
+    }
+
+    const message = this.generatePhotoMessage(patientName, photoUrl, mapsUrl);
     const isOnline = navigator.onLine;
     
     if (isOnline) {
@@ -159,32 +217,23 @@ View photo securely: ${secureUrl}`;
    * Share photo via WhatsApp (online)
    */
   async sharePhotoOnline(patientName, contacts, message, photoUrl) {
-    const results = [];
-    
-    for (let i = 0; i < contacts.length; i++) {
-      const contact = contacts[i];
-      try {
-        // WhatsApp doesn't support direct image sharing via URL
-        // So we share the secure link to view the photo
-        const whatsappUrl = `https://wa.me/${contact.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-        
-        window.open(whatsappUrl, '_blank');
-        results.push({ contact: contact.name, method: 'WhatsApp', status: 'opened' });
-        
-        // Small delay between openings
-        if (i < contacts.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      } catch (error) {
-        results.push({ contact: contact.name, method: 'WhatsApp', status: 'failed', error: error.message });
-      }
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const opened = window.open(whatsappUrl, '_blank');
+    if (!opened) {
+      window.location.href = whatsappUrl;
     }
-    
+
     return {
       success: true,
-      method: 'WhatsApp Photo Sharing',
-      results: results,
-      message: `Photo shared with ${results.filter(r => r.status === 'opened').length} contacts`
+      method: 'WhatsApp',
+      results: [
+        {
+          name: 'Emergency photo share',
+          method: 'WhatsApp',
+          status: 'opened'
+        }
+      ],
+      message: 'Opened a single WhatsApp share window. Select the recipient manually.'
     };
   }
 
@@ -256,7 +305,7 @@ View photo securely: ${secureUrl}`;
         success: true,
         photoUrl: uploadResult.photoUrl,
         secureUrl: uploadResult.secureUrl,
-        viewToken: uploadResult.viewToken,
+        viewToken: null,
         shareResult: shareResult
       };
 
