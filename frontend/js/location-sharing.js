@@ -79,6 +79,35 @@ class LocationSharingService {
   async shareLocationOnline(patientName, contacts) {
     try {
       const message = this.generateLocationMessage(patientName);
+      const results = [];
+
+      if (contacts && contacts.length > 0) {
+        for (let i = 0; i < contacts.length; i++) {
+          const contact = contacts[i];
+          if (!contact.phone) {
+            continue;
+          }
+          const phoneNumber = contact.phone.replace(/\D/g, '');
+          const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+          const opened = window.open(whatsappUrl, '_blank');
+          if (!opened) {
+            window.location.href = whatsappUrl;
+            break;
+          }
+          results.push({ contact: contact.name, method: 'WhatsApp', status: 'opened' });
+          if (i < contacts.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+
+        return {
+          success: true,
+          method: 'WhatsApp',
+          results: results,
+          message: `Opened WhatsApp chat for ${results.length} selected contact(s)`
+        };
+      }
+
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       const opened = window.open(whatsappUrl, '_blank');
       if (!opened) {

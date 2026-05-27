@@ -3,9 +3,9 @@
  * Handles photo capture, upload, and secure sharing
  */
 
-// Replace these values with your Cloudinary free account details:
-const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/<your_cloud_name>/upload';
-const CLOUDINARY_UPLOAD_PRESET = '<your_unsigned_upload_preset>';
+// Set your Cloudinary free account details here or in frontend/js/config.js
+const CLOUDINARY_UPLOAD_URL = window.CLOUDINARY_UPLOAD_URL || 'https://api.cloudinary.com/v1_1/<your_cloud_name>/upload';
+const CLOUDINARY_UPLOAD_PRESET = window.CLOUDINARY_UPLOAD_PRESET || '<your_unsigned_upload_preset>';
 
 class EmergencyCameraService {
   constructor() {
@@ -127,6 +127,10 @@ class EmergencyCameraService {
       throw new Error('No photo data to upload');
     }
 
+    if (CLOUDINARY_UPLOAD_URL.includes('<your_cloud_name>') || CLOUDINARY_UPLOAD_PRESET.includes('<your_unsigned_upload_preset>')) {
+      throw new Error('Cloudinary upload settings are not configured. Set CLOUDINARY_UPLOAD_URL and CLOUDINARY_UPLOAD_PRESET in /frontend/js/emergency-camera.js or /frontend/js/config.js with your free Cloudinary values.');
+    }
+
     const formData = new FormData();
     formData.append('file', this.photoData, `emergency-${Date.now()}.jpg`);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
@@ -217,23 +221,35 @@ class EmergencyCameraService {
    * Share photo via WhatsApp (online)
    */
   async sharePhotoOnline(patientName, contacts, message, photoUrl) {
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    const opened = window.open(whatsappUrl, '_blank');
-    if (!opened) {
-      window.location.href = whatsappUrl;
+    const results = [];
+    
+    if (!contacts || contacts.length === 0) {
+      throw new Error('No emergency contacts selected for photo share');
+    }
+
+    for (let i = 0; i < contacts.length; i++) {
+      const contact = contacts[i];
+      if (!contact.phone) {
+        continue;
+      }
+      const phoneNumber = contact.phone.replace(/\D/g, '');
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      const opened = window.open(whatsappUrl, '_blank');
+      if (!opened) {
+        window.location.href = whatsappUrl;
+        break;
+      }
+      results.push({ contact: contact.name, method: 'WhatsApp', status: 'opened' });
+      if (i < contacts.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
 
     return {
       success: true,
       method: 'WhatsApp',
-      results: [
-        {
-          name: 'Emergency photo share',
-          method: 'WhatsApp',
-          status: 'opened'
-        }
-      ],
-      message: 'Opened a single WhatsApp share window. Select the recipient manually.'
+      results: results,
+      message: `Opened WhatsApp chat for ${results.length} selected contact(s)`
     };
   }
 
