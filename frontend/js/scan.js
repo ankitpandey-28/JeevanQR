@@ -50,7 +50,18 @@
   const photoResult = document.getElementById('photoResult');
   const capturedPhoto = document.getElementById('capturedPhoto');
   const photoStatus = document.getElementById('photoStatus');
+  const photoShareActions = document.getElementById('photoShareActions');
+  const photoShareStartBtn = document.getElementById('photoShareStartBtn');
+  const photoShareDashboard = document.getElementById('photoShareDashboard');
+  const photoContactList = document.getElementById('photoContactList');
+  const photoShareConfirmBtn = document.getElementById('photoShareConfirmBtn');
+  const photoShareCancelBtn = document.getElementById('photoShareCancelBtn');
   const locationBtn = document.getElementById('locationBtn');
+  const locationManualBtn = document.getElementById('locationManualBtn');
+  const locationShareDashboard = document.getElementById('locationShareDashboard');
+  const locationContactList = document.getElementById('locationContactList');
+  const locationShareConfirmBtn = document.getElementById('locationShareConfirmBtn');
+  const locationShareCancelBtn = document.getElementById('locationShareCancelBtn');
   const locationStatus = document.getElementById('locationStatus');
   const locationBox = document.getElementById('locationBox');
   const sharingProgress = document.getElementById('sharingProgress');
@@ -69,6 +80,8 @@
   let patientData = null;
   let locationService = null;
   let cameraService = null;
+  let currentPhotoUpload = null;
+  let currentLocationData = null;
 
   // ============================================
   // API FUNCTIONS
@@ -170,6 +183,53 @@
   }
 
   // ============================================
+  // CONTACT DASHBOARD HELPERS
+  // ============================================
+
+  function renderContactSelection(listEl, contacts) {
+    listEl.innerHTML = '';
+    if (!contacts || contacts.length === 0) {
+      listEl.innerHTML = '<div class="info-text">No emergency contacts available.</div>';
+      return;
+    }
+
+    contacts.forEach((contact, index) => {
+      const row = document.createElement('label');
+      row.className = 'contact-item contact-checkbox';
+      row.style = 'display:block; margin-bottom:8px; cursor:pointer;';
+      row.innerHTML = `
+        <input type="checkbox" value="${index}" style="margin-right:8px;" />
+        ${contact.name}
+      `;
+      listEl.appendChild(row);
+    });
+  }
+
+  function getSelectedContacts(listEl) {
+    const selected = [];
+    listEl.querySelectorAll('input[type="checkbox"]:checked').forEach((input) => {
+      const index = Number(input.value);
+      const contact = patientData.emergencyContacts[index];
+      if (contact) {
+        const phone = decodeContact(contact.phoneEncoded);
+        if (phone) {
+          selected.push({ name: contact.name, phone });
+        }
+      }
+    });
+    return selected;
+  }
+
+  function hidePhotoShareDashboard() {
+    photoShareDashboard.classList.add('hidden');
+    photoShareActions.classList.add('hidden');
+  }
+
+  function hideLocationShareDashboard() {
+    locationShareDashboard.classList.add('hidden');
+  }
+
+  // ============================================
   // EVENT HANDLERS
   // ============================================
 
@@ -245,31 +305,22 @@
       photoResult.classList.remove('hidden');
       cameraPreview.classList.add('hidden');
 
-      // Upload and share photo
-      cameraStatus.textContent = 'Uploading and sharing photo... फोटो अपलोड और साझा कर रहे हैं...';
-      
+      // Upload photo only, then allow manual share
+      cameraStatus.textContent = 'Uploading photo... फोटो अपलोड हो रहा है...';
       const uploadResult = await cameraService.uploadPhoto(token, patientData.fullName);
       if (!uploadResult.success) {
         throw new Error('Failed to upload photo');
       }
 
-      // Share photo with all contacts
-      const shareResult = await cameraService.sharePhotoToAllContacts(
-        patientData.fullName,
-        patientData.emergencyContacts,
-        uploadResult.photoUrl,
-        uploadResult.secureUrl
-      );
-
-      // Show results
+      currentPhotoUpload = uploadResult;
       photoStatus.innerHTML = `
-        ✅ Photo captured and shared successfully!<br>
-        📤 Shared with ${shareResult.results.filter(r => r.status === 'opened').length} emergency contacts<br>
-        🔗 Secure link: ${uploadResult.secureUrl}<br>
+        ✅ Photo uploaded successfully.<br>
+        📤 Ready to share with emergency contacts.<br>
         ⚠️ One-time access only
       `;
+      photoShareActions.classList.remove('hidden');
+      cameraStatus.textContent = 'Photo is ready to share. Tap the button below.';
 
-      // Clean up camera
       if (cameraVideo.srcObject) {
         cameraVideo.srcObject.getTracks().forEach(track => track.stop());
       }
@@ -280,7 +331,6 @@
       console.error('Photo capture error:', error);
       cameraStatus.textContent = `❌ Photo capture failed: ${error.message}`;
       
-      // Clean up camera
       if (cameraVideo.srcObject) {
         cameraVideo.srcObject.getTracks().forEach(track => track.stop());
       }
@@ -303,11 +353,146 @@
     cameraBtn.classList.remove('hidden');
     photoResult.classList.add('hidden');
     cameraStatus.textContent = '';
-    
+    photoShareActions.classList.add('hidden');
+    photoShareDashboard.classList.add('hidden');
+    currentPhotoUpload = null;
+
     // Clear camera service
     if (cameraService) {
       cameraService.clearPhoto();
     }
+  }
+
+  function handlePhotoShareStart() {
+    if (!patientData || !currentPhotoUpload) {
+      photoStatus.textContent = 'Photo is not ready yet. Please capture a photo first.';
+      return;
+    }
+
+    renderContactSelection(photoContactList, patientData.emergencyContacts);
+    photoShareDashboard.classList.remove('hidden');
+    photoShareActions.classList.add('hidden');
+    photoStatus.textContent = 'Choose contacts to share the photo with.';
+  }
+
+  async function handlePhotoShareConfirm() {
+    if (!patientData || !currentPhotoUpload) {
+      photoStatus.textContent = 'Photo is not ready yet. Please capture a photo first.';
+      return;
+    }
+
+    const selectedContacts = getSelectedContacts(photoContactList);
+    if (selectedContacts.length === 0) {
+      photoStatus.textContent = 'Please select at least one emergency contact.';
+      return;
+    }
+
+    photoStatus.textContent = 'Sharing photo...';
+
+    try {
+      const shareResult = await cameraService.sharePhotoToAllContacts(
+        patientData.fullName,
+        selectedContacts,
+        currentPhotoUpload.photoUrl,
+        currentPhotoUpload.secureUrl
+      );
+
+      photoStatus.innerHTML = `✅ Photo share opened.<br>${shareResult.message}`;
+      currentPhotoUpload = null;
+      hidePhotoShareDashboard();
+    } catch (error) {
+      console.error('Photo share error:', error);
+      photoStatus.textContent = `❌ Share failed: ${error.message}`;
+    }
+  }
+
+  function handlePhotoShareCancel() {
+    hidePhotoShareDashboard();
+    if (currentPhotoUpload) {
+      photoShareActions.classList.remove('hidden');
+    }
+  }
+
+  async function handleLocationManual() {
+    if (!locationService || !patientData) {
+      locationStatus.textContent = 'Service not ready. कृपया प्रतीक्षा करें।';
+      return;
+    }
+
+    locationStatus.textContent = 'Preparing manual location share...';
+    sharingResults.classList.add('hidden');
+    locationShareDashboard.classList.add('hidden');
+    locationBox.classList.add('hidden');
+
+    try {
+      const location = await locationService.getCurrentLocation();
+      const formattedLocation = locationService.getFormattedLocation();
+      currentLocationData = location;
+
+      locationBox.innerHTML = `
+        <strong>📍 Location Found:</strong><br>
+        Coordinates: ${formattedLocation.coordinates}<br>
+        Accuracy: ${formattedLocation.accuracy}<br>
+        Time: ${formattedLocation.time}
+      `;
+      locationBox.classList.remove('hidden');
+
+      renderContactSelection(locationContactList, patientData.emergencyContacts);
+      locationShareDashboard.classList.remove('hidden');
+      locationStatus.textContent = 'Select contacts and tap Share Location.';
+    } catch (error) {
+      console.error('Manual location error:', error);
+      locationStatus.textContent = `❌ Unable to get location: ${error.message}`;
+    }
+  }
+
+  async function handleLocationShareConfirm() {
+    if (!locationService || !patientData || !currentLocationData) {
+      locationStatus.textContent = 'Location is not ready yet. Please try again.';
+      return;
+    }
+
+    const selectedContacts = getSelectedContacts(locationContactList);
+    if (selectedContacts.length === 0) {
+      locationStatus.textContent = 'Please select at least one emergency contact.';
+      return;
+    }
+
+    locationStatus.textContent = 'Sharing location...';
+
+    try {
+      const isOnline = locationService.checkConnectivity();
+      if (isOnline) {
+        const result = await locationService.shareLocationOnline(patientData.fullName, selectedContacts);
+        sharingResults.classList.remove('hidden');
+        resultsList.innerHTML = `<div class="result-item">✅ ${result.message}</div>`;
+        locationStatus.textContent = 'WhatsApp opened. Select contact inside WhatsApp.';
+      } else {
+        const result = locationService.shareLocationViaSMS(patientData.fullName, selectedContacts);
+        sharingResults.classList.remove('hidden');
+        resultsList.innerHTML = '';
+        result.links.forEach(link => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn-large btn-secondary';
+          btn.style.marginBottom = '8px';
+          btn.textContent = `Send SMS to ${link.name}`;
+          btn.onclick = () => window.location.href = link.smsUrl;
+          resultsList.appendChild(btn);
+        });
+        locationStatus.textContent = 'Offline: tap a contact to send SMS.';
+      }
+
+      hideLocationShareDashboard();
+      logLocationToBackend(currentLocationData.latitude, currentLocationData.longitude, currentLocationData.mapsUrl);
+    } catch (error) {
+      console.error('Location share error:', error);
+      locationStatus.textContent = `❌ Share failed: ${error.message}`;
+    }
+  }
+
+  function handleLocationShareCancel() {
+    hideLocationShareDashboard();
   }
 
   /**
@@ -496,7 +681,13 @@
   cameraBtn.addEventListener('click', handleCameraClick);
   captureBtn.addEventListener('click', handleCapturePhoto);
   cancelCameraBtn.addEventListener('click', handleCancelCamera);
+  photoShareStartBtn.addEventListener('click', handlePhotoShareStart);
+  photoShareConfirmBtn.addEventListener('click', handlePhotoShareConfirm);
+  photoShareCancelBtn.addEventListener('click', handlePhotoShareCancel);
   locationBtn.addEventListener('click', handleGetLocation);
+  locationManualBtn.addEventListener('click', handleLocationManual);
+  locationShareConfirmBtn.addEventListener('click', handleLocationShareConfirm);
+  locationShareCancelBtn.addEventListener('click', handleLocationShareCancel);
 
   // Listen for connectivity changes
   window.addEventListener('online', updateConnectivityStatus);
