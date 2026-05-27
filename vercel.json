@@ -23,10 +23,8 @@
       "src": "/photo/(.*)",
       "dest": "/backend/server.js"
     },
-    {      "src": "/qr-redirect/(.*)",
-      "dest": "/backend/server.js"
-    },
-    {      "src": "/(favicon\\.ico|favicon\\.svg|favicon-.*\\.png|apple-touch-icon\\.png)",
+    {
+      "src": "/(favicon\.ico|favicon\.svg|favicon-.*\.png|apple-touch-icon\.png)",
       "dest": "/frontend/$1"
     },
     {
