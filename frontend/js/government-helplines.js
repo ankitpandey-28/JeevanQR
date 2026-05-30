@@ -15,10 +15,6 @@
   const messageEl = document.getElementById('message');
   const successEl = document.getElementById('success');
   const qrSection = document.getElementById('qrSection');
-  const qrImage = document.getElementById('qrImage');
-  const downloadLink = document.getElementById('downloadLink');
-  const userNameDisplay = document.getElementById('userNameDisplay');
-  const userBloodDisplay = document.getElementById('userBloodDisplay');
 
   // State
   let helplineCount = 0;
@@ -236,20 +232,8 @@
       }
 
       const data = await res.json();
-      const { token, qrImageUrl } = data;
+      const { token } = data;
 
-      // Display user info
-      userNameDisplay.textContent = userData.fullName;
-      userBloodDisplay.textContent = 'Blood Group: ' + userData.bloodGroup;
-
-      // Show QR image
-      const qrSrc = (qrImageUrl && qrImageUrl.startsWith('/') ? API_BASE + qrImageUrl : qrImageUrl) + '?t=' + encodeURIComponent(token);
-      qrImage.src = qrSrc;
-
-      // Set download link
-      downloadLink.href = qrSrc;
-
-      qrSection.classList.remove('hidden');
       successEl.textContent = 'Emergency QR generated successfully. आपातकालीन QR बन गया है।';
       successEl.classList.remove('hidden');
 
@@ -257,10 +241,8 @@
       sessionStorage.removeItem('emergencyContacts');
       sessionStorage.removeItem('userData');
 
-      // Offer to open QR in full screen
-      if (confirm('Open QR in full screen to save? क्या QR को फुल स्क्रीन में खोलें?')) {
-        window.location.href = '/qr.html?token=' + encodeURIComponent(token);
-      }
+      window.location.href = '/qr.html?token=' + encodeURIComponent(token);
+
     } catch (err) {
       console.error('Registration error:', err);
       showError('Unable to generate QR. कृपया बाद में पुनः प्रयास करें।');
