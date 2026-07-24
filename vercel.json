@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/app/main.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/app/main.py"
+    },
+    {
+      "src": "/scan/(.*)",
+      "dest": "/backend/app/main.py"
+    },
+    {
+      "src": "/photo/(.*)",
+      "dest": "/backend/app/main.py"
+    },
+    {
+      "src": "^/(favicon\\.ico|favicon\\.svg|favicon-.*\\.png|apple-touch-icon\\.png)$",
+      "dest": "/frontend/$1"
+    },
+    {
+      "src": "^/css/(.*)$",
+      "dest": "/frontend/css/$1"
+    },
+    {
+      "src": "^/js/(.*)$",
+      "dest": "/frontend/js/$1"
+    },
+    {
+      "src": "^/(.*\\.html)$",
+      "dest": "/frontend/$1"
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/frontend/$1"
+    }
+  ]
+}

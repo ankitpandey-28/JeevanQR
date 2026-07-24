@@ -1,0 +1,21 @@
+# QR Emergency Alert System - Python/FastAPI Backend
+# Core dependencies
+
+# Web framework
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+
+# Settings management
+pydantic-settings==2.9.1
+
+# QR code generation
+qrcode[pil]==8.0
+
+# Image processing (required by qrcode[pil])
+Pillow==11.2.1
+
+# Multipart form data (required by FastAPI for file uploads)
+python-multipart==0.0.20
+
+# Testing
+pytest==9.1.1
