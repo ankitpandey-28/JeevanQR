@@ -1,129 +1,164 @@
 # JeevanQR
 
-A lightweight emergency QR system for Indian road users — generate a printable QR containing minimal emergency details so anyone can scan and help without installing an app.
+Emergency QR system for Indian road users — generate a printable QR code with critical accident details so anyone can scan and help immediately.
+
+Live demo: https://jeevan-qr-5tb1.vercel.app/
 
 ---
 
-Quick links
+## Overview
 
-- Live demo: (deploy to Vercel / your own host)
-- Source: This repository
+JeevanQR helps riders and drivers carry an emergency-ready QR code for road accidents. The user creates a compact QR containing only the most important information: name, blood group, emergency contacts, and helplines.
 
----
-
-**Why JeevanQR**
-
-Road accidents leave victims unable to communicate critical information. JeevanQR lets users create a simple QR code with essential emergency details (name, blood group, emergency contacts, helplines, location sharing). Anyone can scan the QR to call contacts or share location — no app required.
+Anyone can scan the QR without installing an app. The scan page shows call-ready emergency contacts, government helplines, and supports accident location sharing and one-time photo upload.
 
 ---
 
-## Highlights
+## Key Features
 
-- Self-contained QR tokens (serverless-friendly)
-- One-tap calls to emergency contacts and government helplines
-- Optional location sharing via Google Maps link
-- Lightweight frontend (HTML/CSS/JS) + FastAPI backend
-- Works on low-bandwidth mobile networks and Android devices
+- **Emergency QR creation** with name and blood group
+- **Multiple emergency contacts** with one-tap calling
+- **Government helplines** for police, ambulance, and rescue services
+- **Downloadable QR image** for helmets, bikes, cars, or ID cards
+- **Scan page for rescuers** with clear emergency details
+- **Auto location sharing** via WhatsApp or SMS fallback
+- **Accident photo capture** and one-time secure sharing
+- **Privacy settings** for contact visibility and data retention
+- **Good Samaritan guidance** in English and Hindi
+- **Serverless-compatible backend** with self-contained tokens
+- **Lightweight frontend** using HTML, CSS, and JavaScript
 
 ---
 
-## Quick Start
+## How It Works
 
-Prerequisites
+1. Open the app and enter your full name and blood group.
+2. Add one or more emergency contacts.
+3. Add government helplines and optionally configure privacy settings.
+4. Generate and download the emergency QR code.
+5. A rescuer scans the QR and opens a mobile-friendly emergency page.
+6. The rescuer can call emergency contacts, call helplines, share location, or send an accident photo.
 
-- Node.js 16+ and npm
-- Git
+---
 
-Run locally
+## Pages Included
 
-1. Clone the repo
+- `frontend/index.html` — Register user details and start QR creation
+- `frontend/emergency-contacts.html` — Add emergency contact names and phone numbers
+- `frontend/government-helplines.html` — Add important official helpline numbers
+- `frontend/privacy-settings.html` — Configure privacy and data retention options
+- `frontend/qr.html` — View and download the generated QR image
+- `frontend/scan.html` — Emergency rescue page shown after scanning the QR
 
-```bash
-git clone <your-repo-url>
-cd JeevanQR
-```
+---
 
-2. Install Python dependencies and start
+## Backend & API
+
+The backend runs on **Python + FastAPI** and serves the frontend plus API routes:
+
+- `POST /api/register` — create a user token and registration data
+- `GET /api/qr/{token}` — generate QR code PNG for the emergency page URL
+- `GET /api/users/{token}/public` — return public patient and contact details
+- `POST /api/users/{token}/location` — log accident location data
+- `GET /api/stats` — return basic usage statistics
+- `POST /api/upload-photo` — upload an accident photo with one-time view sharing
+
+Tokens are self-contained base64url strings that encode the emergency data, allowing the scan page to display patient info without requiring a persistent session lookup.
+
+---
+
+## Tech Stack
+
+- Frontend: `HTML`, `CSS`, `JavaScript`
+- Backend: `Python`, `FastAPI`, `Uvicorn`
+- QR generation: `qrcode[pil]`
+- Static assets: served from `frontend/`
+- Local storage: `database/` JSON files for development
+
+---
+
+## Installation
+
+### Prerequisites
+
+- Python 3.12+
+- `pip`
+- Optional: `git`
+
+### Run locally
 
 ```bash
 cd backend
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 3000
 ```
 
-3. Open http://localhost:3000 in a browser.
+Then open:
 
-Notes:
+```text
+http://localhost:3000
+```
 
-- Use `python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 3000` for development.
+### Development notes
+
+- The backend serves static frontend files from `frontend/`
+- Uploaded photos are saved in `uploads/`
+- The repository includes local JSON storage in `database/` for quick testing
 
 ---
 
-## Project Layout
+## Project Structure
 
-See the main folders:
-
+```text
+backend/               # Python/FastAPI backend
+  app/
+    config.py          # environment and path settings
+    main.py            # FastAPI app and route mounting
+    routers/           # API and page routes
+    schemas/           # request/response validation models
+    services/          # token, QR, and validation helpers
+    utils/             # support utilities
+frontend/              # static app pages and JS
+database/              # local JSON storage files (dev only)
+uploads/               # saved uploaded photos
 ```
-frontend/   # static pages (register, QR, scan, viewers)
-backend/    # FastAPI server (API, QR generation, uploads)
-database/   # local JSON storage for users, logs, photos (dev only)
-uploads/    # saved photos (dev only)
-```
-
-Key files
-
-- `frontend/index.html` — registration
-- `frontend/scan.html` — rescuer view after scanning QR
-- `backend/app/main.py` — FastAPI app and router registration
-- `backend/app/database.py` — JSON-based storage for local dev
-
----
-
-## How it works (short)
-
-1. User registers with name, blood group, emergency contacts and helplines.
-2. Backend returns a self-contained token and a QR image URL.
-3. QR encodes a link to `/scan/<token>`; rescuer scans and opens the rescue page.
-4. Rescue page shows name, blood group, helplines and provides encoded phone links and location sharing.
 
 ---
 
 ## Deployment
 
-Recommended: Vercel (serverless) or any Python/FastAPI host.
+This project is optimized for serverless deployment such as Vercel. To deploy:
 
-1. Push this repository to your GitHub account.
-2. Import the repo in Vercel and deploy (Framework: Other).
+1. Push the repository to GitHub.
+2. Import the repo in Vercel.
+3. Configure `python -m uvicorn backend.app.main:app` or use the `backend` folder setup.
 
-Environment variables (optional)
-
-- `SITE_URL` — Optional full site URL to use when generating QR image links.
+> Live demo: https://jeevan-qr-5tb1.vercel.app/
 
 ---
 
-## Security & Privacy
+## Privacy & Safety
 
-- Phone numbers are not displayed as plain text on the rescue page — the frontend uses encoded values and `tel:` links so rescuers can call with one tap.
-- Tokens are self-contained and minimal; avoid encoding sensitive personal data.
-- For production, enable HTTPS and review any photo upload handling for privacy and retention policies.
+- Emergency phone numbers are not shown directly on the public scan page.
+- The QR token only contains the minimum needed emergency data.
+- The scan page is mobile-first and built for fast rescuer access.
+- Good Samaritan guidance is displayed to encourage safe help.
 
 ---
 
 ## Contributing
 
-Improvements welcome — open an issue or a pull request. Suggested steps:
+Feel free to contribute improvements, bug fixes, and new features.
 
 1. Fork the repo
-2. Create a branch (`git checkout -b feat/improve-readme`)
-3. Commit and push
-4. Open a PR with a clear description
+2. Create a branch
+3. Open a pull request
 
 ---
 
 ## License
 
-MIT — see the LICENSE file.
+MIT
 
----
-
-If you want, I can now commit this change and push it to a GitHub repository — tell me the target repo URL (for example: `https://github.com/<your-username>/jeevan-qr.git`) or confirm `origin` remote is correct and I will push.
