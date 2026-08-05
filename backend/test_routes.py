@@ -1,4 +1,4 @@
-"""Route-level pytest suite - tests router behavior matches original Node.js Express routes."""
+
 
 import pytest
 from fastapi.testclient import TestClient
@@ -19,7 +19,7 @@ client = TestClient(app)
 
 
 class TestRegistrationRoute:
-    """Test POST /api/register matches Node.js server.js lines 224-296."""
+    """Test POST /api/register."""
 
     VALID_PAYLOAD = {
         "fullName": "Ravi Kumar",
@@ -107,7 +107,7 @@ class TestRegistrationRoute:
 
 
 class TestQRRoute:
-    """Test GET /api/qr/{token} matches Node.js server.js lines 298-348."""
+    """Test GET /api/qr/{token}."""
 
     def test_qr_generation_for_valid_token(self):
         """Returns PNG image with proper content type and caching."""
@@ -136,7 +136,7 @@ class TestQRRoute:
 
 
 class TestPublicUserRoute:
-    """Test GET /api/users/{token}/public matches Node.js server.js lines 354-379."""
+    """Test GET /api/users/{token}/public."""
 
     def test_public_user_data(self):
         """Returns user data with base64-encoded phone numbers."""
@@ -167,7 +167,7 @@ class TestPublicUserRoute:
 
 
 class TestLocationRoute:
-    """Test POST /api/users/{token}/location matches Node.js server.js lines 385-411."""
+    """Test POST /api/users/{token}/location."""
 
     def test_log_location(self):
         """Returns { ok: true } and logs the accident location."""
@@ -217,7 +217,7 @@ class TestLocationRoute:
 
 
 class TestStatsRoute:
-    """Test GET /api/stats matches Node.js server.js lines 417-420."""
+    """Test GET /api/stats."""
 
     def test_stats_response(self):
         """Returns stats with all required keys."""
@@ -245,7 +245,7 @@ class TestStatsRoute:
 
 
 class TestPhotoRoute:
-    """Test POST /api/upload-photo matches Node.js server.js lines 426-469."""
+    """Test POST /api/upload-photo."""
 
     def test_photo_upload_success(self):
         """Uploads photo and returns URLs."""
@@ -299,7 +299,7 @@ class TestPhotoRoute:
 
 
 class TestPhotoViewRoute:
-    """Test GET /photo/{viewToken} matches Node.js server.js lines 476-495."""
+    """Test GET /photo/{viewToken}."""
 
     def test_photo_view_success(self):
         """Returns photo-view.html for valid, unviewed token."""
@@ -357,7 +357,7 @@ class TestPhotoViewRoute:
 
 
 class TestPageRoutes:
-    """Test static HTML page routes match Node.js server.js lines 186-214."""
+    """Test static HTML page routes."""
 
     def test_index_page(self):
         """GET / returns index.html."""
@@ -391,7 +391,7 @@ class TestPageRoutes:
 
 
 class TestErrorHandling:
-    """Test error handlers match Node.js server.js lines 508-517."""
+    """Test error handlers."""
 
     def test_404_handler(self):
         """Unknown route returns 'Page not found' with 404."""

@@ -1,7 +1,6 @@
 """Module 2 Verification Script - tests all schemas and middleware components."""
 
 import sys
-import json
 
 
 def test_registration_schemas():

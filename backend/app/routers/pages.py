@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from fastapi.responses import FileResponse
-from backend.app.config import settings
 
-router = APIRouter()
+from app.config import settings
+
+router = APIRouter(tags=["Pages"])
 
 @router.get('/', include_in_schema=False)
 async def index():

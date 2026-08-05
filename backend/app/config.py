@@ -1,6 +1,5 @@
 """
 QR Emergency Alert System - Configuration
-Converted from: server.js (top-level constants) + database.js (path constants)
 
 Environment variables:
   PORT            - Server port (default: 3000)
@@ -12,8 +11,8 @@ Environment variables:
   HOME            - Home directory (absent in some serverless envs)
 """
 
-import os
 from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

@@ -1,6 +1,5 @@
 """
 QR Emergency Alert System - Database Module
-Converted from: backend/database.js
 
 Simple JSON file-based storage for users, accident logs, and photos.
 Uses in-memory storage with optional JSON file persistence.
@@ -12,9 +11,8 @@ import json
 import logging
 import time
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
 
-from backend.app.config import settings
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +20,9 @@ logger = logging.getLogger(__name__)
 # IN-MEMORY STORAGE
 # ============================================
 
-users: Dict[str, dict] = {}          # token -> user object
-accident_logs: List[dict] = []       # Array of accident location logs
-photos: Dict[str, dict] = {}         # viewToken -> photo info
+users: dict[str, dict] = {}          # token -> user object
+accident_logs: list[dict] = []       # Array of accident location logs
+photos: dict[str, dict] = {}         # viewToken -> photo info
 
 # ============================================
 # FILE PATHS
@@ -42,8 +40,6 @@ PHOTOS_FILE = settings.DATABASE_DIR / "photos.json"
 def ensure_database_dir() -> None:
     """Ensure database directory exists.
     Skip directory creation in serverless environments.
-
-    Original: ensureDatabaseDir() in database.js lines 34-45
     """
     if settings.is_serverless:
         logger.info("[DB] Running in serverless environment - using in-memory storage")
@@ -59,8 +55,6 @@ def ensure_database_dir() -> None:
 def load_users() -> None:
     """Load users from users.json file.
     Skip if running in serverless environment.
-
-    Original: loadUsers() in database.js lines 50-70
     """
     global users
     if settings.is_serverless:
@@ -81,8 +75,6 @@ def load_users() -> None:
 def load_accident_logs() -> None:
     """Load accident logs from accident_logs.json file.
     Skip if running in serverless environment.
-
-    Original: loadAccidentLogs() in database.js lines 75-95
     """
     global accident_logs
     if settings.is_serverless:
@@ -103,8 +95,6 @@ def load_accident_logs() -> None:
 def load_photos() -> None:
     """Load photos from photos.json file.
     Skip if running in serverless environment.
-
-    Original: loadPhotos() in database.js lines 100-120
     """
     global photos
     if settings.is_serverless:
@@ -129,8 +119,6 @@ def load_photos() -> None:
 def save_users() -> None:
     """Save users to users.json file.
     Skip in serverless environments.
-
-    Original: saveUsers() in database.js lines 125-137
     """
     if settings.is_serverless:
         logger.info("[DB] Running in serverless environment - users stored in memory only")
@@ -144,8 +132,6 @@ def save_users() -> None:
 def save_accident_logs() -> None:
     """Save accident logs to accident_logs.json file.
     Skip in serverless environments.
-
-    Original: saveAccidentLogs() in database.js lines 142-154
     """
     if settings.is_serverless:
         logger.info("[DB] Running in serverless environment - accident logs stored in memory only")
@@ -159,8 +145,6 @@ def save_accident_logs() -> None:
 def save_photos() -> None:
     """Save photos to photos.json file.
     Skip in serverless environments.
-
-    Original: savePhotos() in database.js lines 159-171
     """
     if settings.is_serverless:
         logger.info("[DB] Running in serverless environment - photos stored in memory only")
@@ -178,8 +162,6 @@ def save_photos() -> None:
 def save_user(token: str, user: dict) -> None:
     """Save a new user.
 
-    Original: saveUser() in database.js lines 182-186
-
     Args:
         token: Unique token identifying the user.
         user: User data dictionary.
@@ -189,10 +171,8 @@ def save_user(token: str, user: dict) -> None:
     logger.info("[DB] Saved user: %s (Token: %s...)", user.get("fullName", ""), token[:8])
 
 
-def get_user(token: str) -> Optional[dict]:
+def get_user(token: str) -> dict | None:
     """Get user by token.
-
-    Original: getUser() in database.js lines 193-195
 
     Args:
         token: User token.
@@ -206,8 +186,6 @@ def get_user(token: str) -> Optional[dict]:
 def get_all_users() -> dict:
     """Get all users (for admin).
 
-    Original: getAllUsers() in database.js lines 201-203
-
     Returns:
         Dict of all users keyed by token.
     """
@@ -216,8 +194,6 @@ def get_all_users() -> dict:
 
 def delete_user(token: str) -> bool:
     """Delete user by token.
-
-    Original: deleteUser() in database.js lines 210-217
 
     Args:
         token: User token.
@@ -239,9 +215,6 @@ def delete_user(token: str) -> bool:
 def log_accident_location(token: str, location_data: dict) -> None:
     """Log an accident location.
 
-    Original: logAccidentLocation() in database.js lines 228-240
-    The original creates a flat object: { id: Date.now(), token, ...locationData }
-
     Args:
         token: User token.
         location_data: Location information dict with userName, latitude, longitude, mapsUrl, reportedAt.
@@ -260,8 +233,6 @@ def log_accident_location(token: str, location_data: dict) -> None:
 def get_recent_accident_logs(limit: int = 10) -> list:
     """Get recent accident logs.
 
-    Original: getRecentAccidentLogs() in database.js lines 247-249
-
     Args:
         limit: Maximum number of logs to return.
 
@@ -277,8 +248,6 @@ def get_recent_accident_logs(limit: int = 10) -> list:
 
 def log_photo_upload(token: str, photo_info: dict) -> None:
     """Log photo upload.
-
-    Original: logPhotoUpload() in database.js lines 277-287
 
     Args:
         token: User token.
@@ -298,10 +267,8 @@ def log_photo_upload(token: str, photo_info: dict) -> None:
     logger.info("[DB] Photo uploaded: %s (ViewToken: %s...)", photo_info.get("filename", ""), view_token[:8])
 
 
-def get_photo_by_view_token(view_token: str) -> Optional[dict]:
+def get_photo_by_view_token(view_token: str) -> dict | None:
     """Get photo by view token.
-
-    Original: getPhotoByViewToken() in database.js lines 294-296
 
     Args:
         view_token: Photo view token.
@@ -314,8 +281,6 @@ def get_photo_by_view_token(view_token: str) -> Optional[dict]:
 
 def mark_photo_as_viewed(view_token: str) -> None:
     """Mark photo as viewed (one-time access).
-
-    Original: markPhotoAsViewed() in database.js lines 302-309
 
     Args:
         view_token: Photo view token.
@@ -334,11 +299,8 @@ def mark_photo_as_viewed(view_token: str) -> None:
 def get_stats() -> dict:
     """Get database statistics.
 
-    Original: getStats() in database.js lines 259-266
-    Returns keys: totalUsers, totalAccidentLogs, totalPhotos, lastUpdated
-
     Returns:
-        Stats dictionary matching the original Node.js response format.
+        Stats dictionary.
     """
     return {
         "totalUsers": len(users),

@@ -1,16 +1,11 @@
-"""
-QR Emergency Alert System - QR Code Generation Service
-Converted from: QRCode.toBuffer() calls in server.js lines 338-343
+"""QR Emergency Alert System - QR Code Generation Service
 
-Uses the `qrcode` Python library with Pillow backend to generate
-QR code PNG images, matching the Node.js `qrcode` npm package behavior.
-
-Node.js equivalent:
-  QRCode.toBuffer(url, { errorCorrectionLevel: 'M', margin: 1, width: 512 })
+Generates QR code PNG images using the qrcode library with Pillow backend.
 """
+
+from io import BytesIO
 
 import qrcode
-from io import BytesIO
 from PIL import Image
 
 
@@ -19,7 +14,7 @@ def generate_qr_png(data: str, size: int = 512) -> bytes:
 
     Args:
         data: The string data to encode in the QR code (typically a URL).
-        size: Output image size in pixels (square). Default 512 to match Node.js.
+        size: Output image size in pixels (square).
 
     Returns:
         PNG image as bytes.

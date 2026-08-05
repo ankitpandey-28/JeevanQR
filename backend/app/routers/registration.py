@@ -1,14 +1,16 @@
 from datetime import datetime, timezone
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from backend.app.database import save_user
-from backend.app.services.token_service import encode_user_token
-from backend.app.services.validation import is_valid_indian_phone, clean_phone_number
-from backend.app.schemas.registration import RegisterRequest
 
-router = APIRouter()
+from app.database import save_user
+from app.schemas.registration import RegisterRequest
+from app.services.token_service import encode_user_token
+from app.services.validation import clean_phone_number, is_valid_indian_phone
 
-@router.post('/api/register')
+router = APIRouter(tags=["Registration"])
+
+@router.post('/api/register', summary="Register a new user", description="Register a new user with emergency contacts and government helplines. Returns a self-contained token, a public scan URL, and a QR code image URL.")
 async def register(request: RegisterRequest):
     # Validate required fields
     if not request.fullName or not request.bloodGroup:

@@ -1,6 +1,4 @@
-"""
-QR Emergency Alert System - Utility Helpers
-Converted from: generateToken() and encodeBase64() in server.js lines 113-180
+"""QR Emergency Alert System - Utility Helpers
 
 General-purpose utility functions used across the application.
 """
@@ -12,9 +10,6 @@ import secrets
 def generate_token() -> str:
     """Generate a secure random 32-character hex token.
 
-    Original: generateToken() in server.js lines 113-115
-      return crypto.randomBytes(16).toString('hex');
-
     Returns:
         32-character lowercase hex string.
     """
@@ -24,11 +19,8 @@ def generate_token() -> str:
 def encode_base64(s: str) -> str:
     """Encode a string to base64.
 
-    Original: encodeBase64() in server.js lines 178-180
-      return Buffer.from(str, 'utf8').toString('base64');
-
     Used to encode phone numbers before sending them to the frontend.
-    The frontend decodes them with atob() for tel: links.
+    The frontend decodes them for tel: links.
 
     Args:
         s: String to encode.

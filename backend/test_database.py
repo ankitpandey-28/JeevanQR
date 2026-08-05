@@ -1,4 +1,4 @@
-"""Database pytest suite - tests JSON storage operations match original Node.js behavior."""
+"""Database pytest suite."""
 
 import pytest
 from app.database import (
@@ -20,7 +20,7 @@ def clear_storage():
 
 
 class TestUserOperations:
-    """Test user CRUD operations matching Node.js database.js."""
+    """Test user CRUD operations."""
 
     def test_save_and_get_user(self):
         """saveUser / getUser roundtrip."""
@@ -73,7 +73,7 @@ class TestUserOperations:
 
 
 class TestAccidentLogOperations:
-    """Test accident log operations matching Node.js database.js."""
+    """Test accident log operations."""
 
     def test_log_accident_location(self):
         """logAccidentLocation creates flat log entry with id and token."""
@@ -109,7 +109,7 @@ class TestAccidentLogOperations:
 
 
 class TestPhotoOperations:
-    """Test photo operations matching Node.js database.js."""
+    """Test photo operations."""
 
     def test_log_photo_upload(self):
         """logPhotoUpload stores photo with viewed=False and createdAt."""
@@ -167,9 +167,9 @@ class TestPhotoOperations:
 
 
 class TestStatsOperations:
-    """Test statistics matching Node.js getStats()."""
+    """Test statistics."""
 
-    def test_stats_keys_match_nodejs(self):
+    def test_stats_keys(self):
         """Stats response has exact keys: totalUsers, totalAccidentLogs, totalPhotos, lastUpdated."""
         stats = get_stats()
         assert "totalUsers" in stats

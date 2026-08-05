@@ -1,25 +1,17 @@
 import logging
-import sys
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-try:
-    from app.config import settings
-    from app.middleware.error_handler import http_exception_handler, generic_exception_handler
-    from app.routers import registration, qr, users, photos, stats, pages
-except ModuleNotFoundError:
-    from backend.app.config import settings
-    from backend.app.middleware.error_handler import http_exception_handler, generic_exception_handler
-    from backend.app.routers import registration, qr, users, photos, stats, pages
+from app.config import settings
+from app.middleware.error_handler import (
+    generic_exception_handler,
+    http_exception_handler,
+)
+from app.routers import pages, photos, qr, registration, stats, users
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -45,22 +37,13 @@ app = FastAPI(
 )
 
 # CORS middleware
-if settings.ALLOWED_ORIGIN:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[settings.ALLOWED_ORIGIN],
-        allow_credentials=True,
-        allow_methods=['*'],
-        allow_headers=['*'],
-    )
-else:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=['*'],
-        allow_credentials=True,
-        allow_methods=['*'],
-        allow_headers=['*'],
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.ALLOWED_ORIGIN] if settings.ALLOWED_ORIGIN else ['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 # Exception handlers
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)

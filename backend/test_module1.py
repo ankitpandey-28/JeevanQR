@@ -28,13 +28,13 @@ def test_database():
         get_stats,
     )
 
-    # Test stats keys match Node.js format
+    # Test stats keys
     stats = get_stats()
     assert "totalUsers" in stats, "Missing totalUsers key"
     assert "totalAccidentLogs" in stats, "Missing totalAccidentLogs key"
     assert "totalPhotos" in stats, "Missing totalPhotos key"
     assert "lastUpdated" in stats, "Missing lastUpdated key"
-    print("  Stats keys match Node.js: PASS")
+    print("  Stats keys: PASS")
 
     # Test user CRUD
     save_user("test_token_abc", {

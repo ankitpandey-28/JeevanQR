@@ -1,6 +1,4 @@
-"""
-QR Emergency Alert System - Validation Functions
-Converted from: isValidIndianPhone() and cleanPhoneNumber() in server.js lines 159-171
+"""QR Emergency Alert System - Validation Functions
 
 Phone validation and cleaning utilities used during user registration.
 """
@@ -11,12 +9,8 @@ import re
 def is_valid_indian_phone(phone: str) -> bool:
     """Validate phone number.
 
-    Original: isValidIndianPhone() in server.js lines 159-162
-      // Temporarily accept ANY non-empty value
-      return phone && phone.trim().length > 0;
-
-    Note: The original Node.js code accepts any non-empty string.
-    This is intentionally permissive to support various phone formats.
+    Accepts any non-empty string after trimming. This is intentionally
+    permissive to support various phone formats.
 
     Args:
         phone: Phone number string to validate.
@@ -29,9 +23,6 @@ def is_valid_indian_phone(phone: str) -> bool:
 
 def clean_phone_number(phone: str) -> str:
     """Clean phone number to digits only.
-
-    Original: cleanPhoneNumber() in server.js lines 169-171
-      return phone.replace(/\\D/g, '');
 
     Args:
         phone: Phone number string to clean.

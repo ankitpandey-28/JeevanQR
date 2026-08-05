@@ -1,4 +1,4 @@
-"""API endpoint pytest suite - verifies every endpoint matches original Node.js backend exactly."""
+"""API endpoint pytest suite."""
 
 import pytest
 from fastapi.testclient import TestClient
@@ -23,7 +23,7 @@ client = TestClient(app)
 class TestRegistrationAPI:
     """POST /api/register - Full API contract verification."""
 
-    def test_response_format_matches_nodejs(self):
+    def test_response_format(self):
         """Response must contain exactly: token, publicUrl, qrImageUrl."""
         resp = client.post("/api/register", json={
             "fullName": "Ravi Kumar",
@@ -33,7 +33,6 @@ class TestRegistrationAPI:
         })
         assert resp.status_code == 200
         data = resp.json()
-        # Exact keys from Node.js: res.json({ token, publicUrl, qrImageUrl })
         assert set(data.keys()) == {"token", "publicUrl", "qrImageUrl"}
         assert isinstance(data["token"], str)
         assert data["publicUrl"] == f"/scan/{data['token']}"
@@ -54,7 +53,7 @@ class TestRegistrationAPI:
         assert decoded["bloodGroup"] == "B+"
 
     def test_error_response_format(self):
-        """Error responses have { error: string } format matching Node.js."""
+        """Error responses have { error: string } format."""
         resp = client.post("/api/register", json={
             "fullName": "",
             "bloodGroup": "B+",
@@ -67,7 +66,7 @@ class TestRegistrationAPI:
         assert isinstance(data["error"], str)
 
     def test_hindi_error_messages_preserved(self):
-        """Hindi error messages from original Node.js are preserved."""
+        """Hindi error messages are preserved."""
         resp = client.post("/api/register", json={
             "fullName": "Test",
             "bloodGroup": "B+",
@@ -80,7 +79,7 @@ class TestRegistrationAPI:
 class TestPublicUserAPI:
     """GET /api/users/{token}/public - Full API contract verification."""
 
-    def test_response_format_matches_nodejs(self):
+    def test_response_format(self):
         """Response must contain: fullName, bloodGroup, emergencyContacts (with phoneEncoded), governmentHelplines."""
         reg = client.post("/api/register", json={
             "fullName": "Ravi Kumar",
@@ -119,7 +118,7 @@ class TestPublicUserAPI:
 class TestLocationAPI:
     """POST /api/users/{token}/location - Full API contract verification."""
 
-    def test_response_format_matches_nodejs(self):
+    def test_response_format(self):
         """Response must be { ok: true }."""
         reg = client.post("/api/register", json={
             "fullName": "Ravi Kumar",
@@ -137,7 +136,7 @@ class TestLocationAPI:
         assert resp.status_code == 200
         assert resp.json() == {"ok": True}
 
-    def test_flat_log_structure_matches_nodejs(self):
+    def test_flat_log_structure(self):
         """Log entry has flat structure: { id, token, userName, latitude, longitude, mapsUrl, reportedAt }."""
         reg = client.post("/api/register", json={
             "fullName": "Ravi Kumar",
@@ -168,7 +167,7 @@ class TestLocationAPI:
 class TestStatsAPI:
     """GET /api/stats - Full API contract verification."""
 
-    def test_response_format_matches_nodejs(self):
+    def test_response_format(self):
         """Response must contain: totalUsers, totalAccidentLogs, totalPhotos, lastUpdated."""
         resp = client.get("/api/stats")
         assert resp.status_code == 200
@@ -183,7 +182,7 @@ class TestStatsAPI:
 class TestQRAPI:
     """GET /api/qr/{token} - Full API contract verification."""
 
-    def test_response_headers_match_nodejs(self):
+    def test_response_headers(self):
         """Response has Content-Type: image/png and Cache-Control header."""
         reg = client.post("/api/register", json={
             "fullName": "Ravi Kumar",
@@ -199,7 +198,7 @@ class TestQRAPI:
         assert "max-age=31536000" in resp.headers.get("cache-control", "")
 
     def test_invalid_token_returns_404_with_message(self):
-        """Invalid token returns 404 with 'Unknown QR code' (matching Node.js)."""
+        """Invalid token returns 404 with 'Unknown QR code'."""
         resp = client.get("/api/qr/invalid_token")
         assert resp.status_code == 404
         assert resp.text == "Unknown QR code"
@@ -208,7 +207,7 @@ class TestQRAPI:
 class TestPhotoUploadAPI:
     """POST /api/upload-photo - Full API contract verification."""
 
-    def test_response_format_matches_nodejs(self):
+    def test_response_format(self):
         """Response must contain: success, photoUrl, secureUrl, viewToken, message."""
         reg = client.post("/api/register", json={
             "fullName": "Ravi Kumar",
@@ -298,7 +297,7 @@ class TestErrorHandlingAPI:
     """Error handlers - Full API contract verification."""
 
     def test_404_returns_page_not_found(self):
-        """Unknown route returns 'Page not found' with 404 (matching Node.js)."""
+        """Unknown route returns 'Page not found' with 404."""
         resp = client.get("/this-route-does-not-exist")
         assert resp.status_code == 404
         assert resp.text == "Page not found"

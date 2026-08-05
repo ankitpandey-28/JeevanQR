@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import Response
-from backend.app.services.token_service import decode_user_token
-from backend.app.database import get_user
-from backend.app.services.qr_service import generate_qr_png
-from backend.app.config import settings
 
-router = APIRouter()
+from app.config import settings
+from app.database import get_user
+from app.services.qr_service import generate_qr_png
+from app.services.token_service import decode_user_token
 
-@router.get('/api/qr/{token}')
+router = APIRouter(tags=["QR Code"])
+
+@router.get('/api/qr/{token}', summary="Generate QR code", description="Generate a QR code PNG image for the given user token. The QR code encodes the public scan URL.")
 async def get_qr(token: str, request: Request):
     # Try decode from self-contained token first, then database
     user = decode_user_token(token)

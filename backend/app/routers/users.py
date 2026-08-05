@@ -1,14 +1,16 @@
 from datetime import datetime, timezone
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from backend.app.database import get_user, log_accident_location
-from backend.app.services.token_service import decode_user_token
-from backend.app.utils.helpers import encode_base64
-from backend.app.schemas.users import LocationRequest
 
-router = APIRouter()
+from app.database import get_user, log_accident_location
+from app.schemas.users import LocationRequest
+from app.services.token_service import decode_user_token
+from app.utils.helpers import encode_base64
 
-@router.get('/api/users/{token}/public')
+router = APIRouter(tags=["Users"])
+
+@router.get('/api/users/{token}/public', summary="Get public user info", description="Retrieve public user information including name, blood group, base64-encoded emergency contacts, and government helplines.")
 async def get_public_user(token: str):
     user = decode_user_token(token)
     if not user:
@@ -26,7 +28,7 @@ async def get_public_user(token: str):
         'governmentHelplines': user.get('governmentHelplines', [])
     }
 
-@router.post('/api/users/{token}/location')
+@router.post('/api/users/{token}/location', summary="Log accident location", description="Log an accident location report for the given user. All fields are optional.")
 async def post_location(token: str, body: LocationRequest):
     user = decode_user_token(token)
     if not user:

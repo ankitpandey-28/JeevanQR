@@ -1,4 +1,4 @@
-"""Router package for the FastAPI migration."""
+"""Router package."""
 
 from . import pages, photos, qr, registration, stats, users
 
