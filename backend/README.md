@@ -1,62 +1,21 @@
-# QR Emergency Alert System - Python/FastAPI Backend
+# QR Emergency Alert System - FastAPI Backend
 
-A complete Python/FastAPI migration of the original Node.js/Express backend for the JeevanQR emergency QR code system.
+Backend API for the JeevanQR emergency QR code system, built with Python and FastAPI.
 
-## Overview
+## Project Overview
 
-This backend provides:
-- **User Registration** with emergency contacts and government helplines
-- **Self-contained tokens** (base64url encoded) that carry all user data — no database lookup needed
-- **QR code generation** (PNG images)
-- **Photo uploads** with one-time secure view links
-- **Accident location logging**
-- **Statistics** endpoint
-- **Static file serving** for the frontend (HTML, CSS, JS)
-- **Serverless compatibility** (Vercel-ready)
+JeevanQR is a critical emergency alert system designed to store vital user information (such as blood group, emergency contacts, and government helplines) securely. This backend provides the necessary infrastructure to handle user registration, self-contained QR code generation via base64url encoded tokens, accident location logging, and photo uploads with secure one-time viewing links. It supports both local file-based storage and serverless deployments with in-memory fallbacks.
 
-## Architecture
+## Features
 
-```
-backend/
-├── app/
-│   ├── __init__.py           # Package init
-│   ├── config.py             # Pydantic Settings (Module 1)
-│   ├── database.py           # JSON file storage (Module 1)
-│   ├── main.py               # FastAPI app entry point (Module 3)
-│   ├── middleware/
-│   │   ├── __init__.py       # Package init (Module 2)
-│   │   └── error_handler.py  # HTTP 404/500 handlers (Module 2)
-│   ├── routers/
-│   │   ├── __init__.py       # Package init (Module 3)
-│   │   ├── pages.py          # Static HTML page routes (Module 3)
-│   │   ├── photos.py         # Photo upload/view routes (Module 3)
-│   │   ├── qr.py             # QR generation route (Module 3)
-│   │   ├── registration.py   # User registration route (Module 3)
-│   │   ├── stats.py          # Statistics route (Module 3)
-│   │   └── users.py          # User public data / location routes (Module 3)
-│   ├── schemas/
-│   │   ├── __init__.py       # Package init (Module 2)
-│   │   ├── photos.py         # Photo upload schemas (Module 2)
-│   │   ├── registration.py   # Registration request/response schemas (Module 2)
-│   │   ├── stats.py          # Statistics response schema (Module 2)
-│   │   └── users.py          # User data / location schemas (Module 2)
-│   ├── services/
-│   │   ├── __init__.py       # Package init (Module 1)
-│   │   ├── qr_service.py     # QR code generation (Module 1)
-│   │   ├── token_service.py  # Token encode/decode (Module 1)
-│   │   └── validation.py     # Phone validation utilities (Module 1)
-│   └── utils/
-│       ├── __init__.py       # Package init (Module 1)
-│       └── helpers.py        # Token generation, base64 encoding (Module 1)
-├── .env.example              # Environment variable template
-├── requirements.txt          # Python dependencies
-├── test_module1.py           # Module 1 unit tests
-├── test_module2.py           # Module 2 unit tests
-├── test_database.py          # Database pytest suite
-├── test_api.py               # API endpoint pytest suite
-├── test_routes.py            # Route-level pytest suite
-└── README.md                 # This file
-```
+- **User Registration**: Register user details, emergency contacts, and government helplines.
+- **Self-contained tokens**: Uses base64url encoded tokens that carry user data, eliminating the need for database lookups on scan.
+- **QR code generation**: Dynamic generation of QR code PNG images with embedded scan URLs.
+- **Photo uploads**: Support for uploading emergency photos with secure, one-time view links.
+- **Accident location logging**: Endpoints to log accident coordinates.
+- **Statistics**: Endpoint for monitoring system usage statistics.
+- **Static file serving**: Serves HTML, CSS, and JavaScript for the frontend.
+- **Serverless compatibility**: Seamless integration with platforms like Vercel.
 
 ## Prerequisites
 
@@ -65,39 +24,73 @@ backend/
 
 ## Installation
 
-```bash
-# Navigate to the backend directory
-cd backend
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
 
-# Create a virtual environment (recommended)
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
+2. Create a virtual environment:
+   ```bash
+   python -m venv venv
+   ```
 
-# Install dependencies
-pip install -r requirements.txt
+3. Activate the virtual environment:
+   - On Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
 
-# Copy environment configuration
-cp .env.example .env
-```
+4. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. Copy the environment configuration file:
+   ```bash
+   cp .env.example .env
+   ```
+
+## Environment Variables
+
+The backend uses the following environment variables. Ensure these are set in your `.env` file or deployment environment. Note that `NODE_ENV` is used for environment mode detection (e.g., detecting production or Vercel environments).
+
+| Variable | Description | Default Value |
+|----------|-------------|---------------|
+| `PORT` | Port for the server to listen on | `3000` |
+| `ALLOWED_ORIGIN` | CORS allowed origin | `*` |
+| `SITE_URL` | Base URL for the application | `http://localhost:3000` |
+| `VERCEL_URL` | Set automatically by Vercel; used if SITE_URL is not set | *(None)* |
+| `VERCEL` | Set automatically by Vercel; indicates a serverless environment | `0` or unset |
+| `NODE_ENV` | Environment mode detection (e.g., `production`) | `development` |
+| `HOME` | Home directory, used to determine storage paths in some environments | *(System default)* |
 
 ## Running the Server
 
-```bash
-# Start with uvicorn (development)
-uvicorn app.main:app --reload --port 3000
+Start the application in development mode using uvicorn:
 
-# Or with the provided startup script
+```bash
+uvicorn app.main:app --reload --port 3000
+```
+
+Alternatively, run it via the Python module:
+
+```bash
 python -m uvicorn app.main:app --reload --port 3000
 ```
 
 The server will be available at `http://localhost:3000`.
 
-## API Endpoints
+## API Documentation
 
-All endpoints match the original Node.js backend exactly:
+FastAPI provides automatic interactive API documentation. Once the server is running, you can access:
+- **Swagger UI**: `http://localhost:3000/docs`
+- **ReDoc**: `http://localhost:3000/redoc`
+
+## API Endpoints
 
 | Method | URL | Description |
 |--------|-----|-------------|
@@ -206,56 +199,73 @@ Response 200:
 }
 ```
 
-## Running Tests
+## Testing
+
+Run tests using pytest:
 
 ```bash
-# Module verification scripts
-python test_module1.py
-python test_module2.py
+# Run all tests
+python -m pytest -v
 
-# Pytest suites
+# Run individual test suites
 python -m pytest test_database.py -v
 python -m pytest test_api.py -v
 python -m pytest test_routes.py -v
-
-# Run all tests
-python -m pytest -v
 ```
 
-## Deployment (Vercel)
+## Project Structure
 
-This project is ready for deployment on Vercel as a serverless function.
+```text
+backend/
+├── app/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── database.py
+│   ├── main.py
+│   ├── middleware/
+│   │   ├── __init__.py
+│   │   └── error_handler.py
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── pages.py
+│   │   ├── photos.py
+│   │   ├── qr.py
+│   │   ├── registration.py
+│   │   ├── stats.py
+│   │   └── users.py
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── photos.py
+│   │   ├── registration.py
+│   │   ├── stats.py
+│   │   └── users.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── qr_service.py
+│   │   ├── token_service.py
+│   │   └── validation.py
+│   └── utils/
+│       ├── __init__.py
+│       └── helpers.py
+├── .env.example
+├── requirements.txt
+├── test_api.py
+├── test_database.py
+├── test_routes.py
+└── README.md
+```
 
-1. Push to a GitHub repository.
-2. Import into Vercel.
-3. Set the following environment variables in Vercel:
-   - `NODE_ENV=production`
-4. Vercel automatically sets `VERCEL` and `VERCEL_URL`.
+## Deployment
 
-No additional configuration is needed. The app detects serverless environments and switches to in-memory storage automatically.
+This project is configured for deployment on Vercel as a serverless application.
 
-For the `vercel.json` configuration, see the project root.
+1. Push the code to a GitHub repository.
+2. Import the project into Vercel.
+3. Set the following environment variable in your Vercel project settings:
+  - `NODE_ENV=production`
+4. Vercel automatically provides `VERCEL` and `VERCEL_URL`.
 
-## Migration Notes
-
-This backend is a direct migration of the original Node.js/Express backend (`legacy-backend/server.js`). Key differences:
-
-| Aspect | Node.js | Python/FastAPI |
-|--------|---------|----------------|
-| Framework | Express | FastAPI |
-| Language | JavaScript | Python 3.12+ |
-| Validation | Manual | Pydantic v2 |
-| Typing | JSDoc | Type hints |
-| Async | Async/await | Async/await |
-| Settings | process.env | pydantic-settings |
-| QR Code | qrcode npm | qrcode[pil] PyPI |
-| Storage | JSON files | JSON files (same format) |
-
-All business logic, data formats, and API contracts remain identical.
-
-## Original Node.js Backend
-
-The original Express.js backend is located at `legacy-backend/server.js` in the project root for reference during the migration.
+The application automatically detects the Vercel environment and adapts storage mechanisms accordingly.
 
 ## License
 

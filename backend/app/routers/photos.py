@@ -1,18 +1,33 @@
-from datetime import datetime, timezone
-import time as time_mod
 import random
-from fastapi import APIRouter, UploadFile, File, Form, Request
+import time as time_mod
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
-from backend.app.database import get_user, log_photo_upload, get_photo_by_view_token, mark_photo_as_viewed
-from backend.app.utils.helpers import generate_token
-from backend.app.config import settings
 
-router = APIRouter()
+from app.config import settings
+from app.database import (
+    get_photo_by_view_token,
+    get_user,
+    log_photo_upload,
+    mark_photo_as_viewed,
+)
+from app.utils.helpers import generate_token
 
-@router.post('/api/upload-photo')
+photo_upload_field = File(...)
+
+
+def get_photo_upload(photo: UploadFile = photo_upload_field) -> UploadFile:
+    return photo
+
+photo_upload_dependency = Depends(get_photo_upload)
+
+router = APIRouter(tags=["Photos"])
+
+@router.post('/api/upload-photo', summary="Upload emergency photo", description="Upload an emergency photo for a registered user. Returns a one-time secure view URL.")
 async def upload_photo(
     request: Request,
-    photo: UploadFile = File(...),
+    photo: UploadFile = photo_upload_dependency,
     token: str = Form(...),
     patientName: str = Form(default=''),
     timestamp: str = Form(default='')
@@ -42,8 +57,7 @@ async def upload_photo(
     if not settings.is_serverless:
         settings.UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
         filepath = settings.UPLOADS_DIR / filename
-        with open(filepath, 'wb') as f:
-            f.write(contents)
+        filepath.write_bytes(contents)
     
     # Generate secure view token
     view_token = generate_token()
@@ -72,7 +86,7 @@ async def upload_photo(
         'message': 'Photo uploaded successfully'
     }
 
-@router.get('/photo/{view_token}')
+@router.get('/photo/{view_token}', summary="View photo", description="View an uploaded photo using its one-time view token. The link expires after the first access.")
 async def view_photo(view_token: str):
     photo_info = get_photo_by_view_token(view_token)
     if not photo_info:

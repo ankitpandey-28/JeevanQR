@@ -29,3 +29,18 @@ dist/
 build/
 
 .vercel
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Uploads and user content
+uploads/
+
+# Ruff cache
+.ruff_cache/

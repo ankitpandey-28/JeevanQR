@@ -1,0 +1,12 @@
+*.jpg
+.ruff_cache/
+.venv/
+v/
+__pycache__/
+.pytest_cache/
+*.txt
+*.pyc
+*.pyo
+*.log
+.env
+.mypy_cache/
