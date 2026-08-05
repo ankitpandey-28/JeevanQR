@@ -1,272 +1,88 @@
-# QR Emergency Alert System - FastAPI Backend
+# QR Emergency Alert System — FastAPI backend
 
-Backend API for the JeevanQR emergency QR code system, built with Python and FastAPI.
+This repository contains the backend API for the JeevanQR emergency QR code system, implemented with Python and FastAPI. It provides user registration, self-contained base64url tokens, QR code generation, accident logging, photo uploads with one-time view links, and lightweight file-based persistence with serverless-friendly fallbacks.
 
-## Project Overview
+Quick links
+- Run locally: `uvicorn app.main:app --reload --port 3000`
+- Tests: `python -m pytest -q`
+- Lint: `python -m ruff check app`
 
-JeevanQR is a critical emergency alert system designed to store vital user information (such as blood group, emergency contacts, and government helplines) securely. This backend provides the necessary infrastructure to handle user registration, self-contained QR code generation via base64url encoded tokens, accident location logging, and photo uploads with secure one-time viewing links. It supports both local file-based storage and serverless deployments with in-memory fallbacks.
-
-## Features
-
-- **User Registration**: Register user details, emergency contacts, and government helplines.
-- **Self-contained tokens**: Uses base64url encoded tokens that carry user data, eliminating the need for database lookups on scan.
-- **QR code generation**: Dynamic generation of QR code PNG images with embedded scan URLs.
-- **Photo uploads**: Support for uploading emergency photos with secure, one-time view links.
-- **Accident location logging**: Endpoints to log accident coordinates.
-- **Statistics**: Endpoint for monitoring system usage statistics.
-- **Static file serving**: Serves HTML, CSS, and JavaScript for the frontend.
-- **Serverless compatibility**: Seamless integration with platforms like Vercel.
-
-## Prerequisites
-
+## Requirements
 - Python 3.12+
-- pip
+- Install dependencies:
 
-## Installation
+```bash
+python -m pip install -r requirements.txt
+```
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+## Quickstart
+1. From the `backend` directory create and activate a virtual environment:
 
-2. Create a virtual environment:
-   ```bash
-   python -m venv venv
-   ```
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+```
 
-3. Activate the virtual environment:
-   - On Windows:
-     ```bash
-     venv\Scripts\activate
-     ```
-   - On macOS/Linux:
-     ```bash
-     source venv/bin/activate
-     ```
+2. Install dependencies and copy environment file:
 
-4. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+pip install -r requirements.txt
+cp .env.example .env
+```
 
-5. Copy the environment configuration file:
-   ```bash
-   cp .env.example .env
-   ```
-
-## Environment Variables
-
-The backend uses the following environment variables. Ensure these are set in your `.env` file or deployment environment. Note that `NODE_ENV` is used for environment mode detection (e.g., detecting production or Vercel environments).
-
-| Variable | Description | Default Value |
-|----------|-------------|---------------|
-| `PORT` | Port for the server to listen on | `3000` |
-| `ALLOWED_ORIGIN` | CORS allowed origin | `*` |
-| `SITE_URL` | Base URL for the application | `http://localhost:3000` |
-| `VERCEL_URL` | Set automatically by Vercel; used if SITE_URL is not set | *(None)* |
-| `VERCEL` | Set automatically by Vercel; indicates a serverless environment | `0` or unset |
-| `NODE_ENV` | Environment mode detection (e.g., `production`) | `development` |
-| `HOME` | Home directory, used to determine storage paths in some environments | *(System default)* |
-
-## Running the Server
-
-Start the application in development mode using uvicorn:
+3. Start the development server:
 
 ```bash
 uvicorn app.main:app --reload --port 3000
 ```
 
-Alternatively, run it via the Python module:
+API docs will be available at `/docs` (Swagger UI) and `/redoc` (ReDoc).
+
+## Environment variables
+Configure environment variables in `.env` or your deployment environment. Key variables:
+
+- `PORT` — server port (default `3000`)
+- `ALLOWED_ORIGIN` — CORS origin (default `*`)
+- `SITE_URL` — base site URL (optional)
+- `VERCEL` / `VERCEL_URL` — provided by Vercel when deployed (used to detect serverless)
+- `NODE_ENV` — environment mode (e.g., `production`)
+
+## Testing & Linting
+- Run tests:
 
 ```bash
-python -m uvicorn app.main:app --reload --port 3000
+python -m pytest -q
 ```
 
-The server will be available at `http://localhost:3000`.
-
-## API Documentation
-
-FastAPI provides automatic interactive API documentation. Once the server is running, you can access:
-- **Swagger UI**: `http://localhost:3000/docs`
-- **ReDoc**: `http://localhost:3000/redoc`
-
-## API Endpoints
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| `GET` | `/` | Home page (index.html) |
-| `GET` | `/scan/{token}` | Emergency scan page |
-| `GET` | `/qr.html` | QR display page |
-| `GET` | `/emergency-contacts.html` | Emergency contacts page |
-| `GET` | `/government-helplines.html` | Government helplines page |
-| `GET` | `/privacy-settings.html` | Privacy settings page |
-| `GET` | `/photo/{viewToken}` | One-time photo view page |
-| `POST` | `/api/register` | Register a new user |
-| `GET` | `/api/qr/{token}` | Generate QR code PNG |
-| `GET` | `/api/users/{token}/public` | Get public user info |
-| `POST` | `/api/users/{token}/location` | Log accident location |
-| `GET` | `/api/stats` | Get statistics |
-| `POST` | `/api/upload-photo` | Upload emergency photo |
-
-### Registration
-
-```json
-POST /api/register
-{
-  "fullName": "Ravi Kumar",
-  "bloodGroup": "B+",
-  "emergencyContacts": [{"name": "Sunita", "phone": "9876543210"}],
-  "governmentHelplines": [{"name": "Police", "number": "100"}]
-}
-
-Response 200:
-{
-  "token": "<base64url-encoded-token>",
-  "publicUrl": "/scan/<token>",
-  "qrImageUrl": "/api/qr/<token>"
-}
-```
-
-### QR Code
-
-```http
-GET /api/qr/{token}
-Response: image/png (QR code with scan URL embedded)
-Cache-Control: public, max-age=31536000
-```
-
-### Public User Info
-
-```json
-GET /api/users/{token}/public
-
-Response 200:
-{
-  "fullName": "Ravi Kumar",
-  "bloodGroup": "B+",
-  "emergencyContacts": [{"name": "Sunita", "phoneEncoded": "<base64>"}],
-  "governmentHelplines": [{"name": "Police", "number": "100"}]
-}
-```
-
-### Accident Location
-
-```json
-POST /api/users/{token}/location
-{
-  "latitude": 28.6139,
-  "longitude": 77.2090,
-  "mapsUrl": "https://maps.google.com/?q=28.6139,77.2090"
-}
-
-Response 200:
-{ "ok": true }
-```
-
-### Photo Upload
-
-```http
-POST /api/upload-photo
-Content-Type: multipart/form-data
-
-Fields:
-- photo: file (image)
-- token: string
-- patientName: string (optional)
-- timestamp: string (optional)
-
-Response 200:
-{
-  "success": true,
-  "photoUrl": "/uploads/emergency-<id>.jpg",
-  "secureUrl": "http://host/photo/<viewToken>",
-  "viewToken": "<hex>",
-  "message": "Photo uploaded successfully"
-}
-```
-
-### Statistics
-
-```json
-GET /api/stats
-
-Response 200:
-{
-  "totalUsers": 0,
-  "totalAccidentLogs": 0,
-  "totalPhotos": 0,
-  "lastUpdated": "2024-01-01T00:00:00.000Z"
-}
-```
-
-## Testing
-
-Run tests using pytest:
+- Run Ruff (lint):
 
 ```bash
-# Run all tests
-python -m pytest -v
-
-# Run individual test suites
-python -m pytest test_database.py -v
-python -m pytest test_api.py -v
-python -m pytest test_routes.py -v
+python -m ruff check app
 ```
 
-## Project Structure
+## Project layout
 
-```text
+Top-level structure (key files):
+
+```
 backend/
-├── app/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── database.py
-│   ├── main.py
-│   ├── middleware/
-│   │   ├── __init__.py
-│   │   └── error_handler.py
-│   ├── routers/
-│   │   ├── __init__.py
-│   │   ├── pages.py
-│   │   ├── photos.py
-│   │   ├── qr.py
-│   │   ├── registration.py
-│   │   ├── stats.py
-│   │   └── users.py
-│   ├── schemas/
-│   │   ├── __init__.py
-│   │   ├── photos.py
-│   │   ├── registration.py
-│   │   ├── stats.py
-│   │   └── users.py
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── qr_service.py
-│   │   ├── token_service.py
-│   │   └── validation.py
-│   └── utils/
-│       ├── __init__.py
-│       └── helpers.py
-├── .env.example
+├── app/                # FastAPI application package
 ├── requirements.txt
-├── test_api.py
-├── test_database.py
-├── test_routes.py
-└── README.md
+├── README.md
+└── tests and utilities
 ```
+
+Detailed layout is preserved in the repository; routers are in `app/routers`, services in `app/services`, and Pydantic schemas in `app/schemas`.
 
 ## Deployment
 
-This project is configured for deployment on Vercel as a serverless application.
+The backend supports both traditional server deployment (using `uvicorn`/ASGI) and serverless platforms (Vercel). When deployed to Vercel the app will detect the environment using `VERCEL`/`VERCEL_URL` and adapt storage (in-memory fallback).
 
-1. Push the code to a GitHub repository.
-2. Import the project into Vercel.
-3. Set the following environment variable in your Vercel project settings:
-  - `NODE_ENV=production`
-4. Vercel automatically provides `VERCEL` and `VERCEL_URL`.
-
-The application automatically detects the Vercel environment and adapts storage mechanisms accordingly.
+## Contribution & CI
+- If you want CI, a simple GitHub Actions workflow can run `ruff` and `pytest` on push/PR. I can add a sample workflow on request.
 
 ## License
-
 Same as the original project.
